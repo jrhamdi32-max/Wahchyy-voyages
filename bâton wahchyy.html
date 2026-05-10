@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Blind Stick — Présentation</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        :root {
+            --bg: #0d0f12;
+            --bg-card: #161a20;
+            --fg: #f0ece4;
+            --fg-muted: #8a8d93;
+            --accent: #e8a838;
+            --accent-glow: rgba(232, 168, 56, 0.15);
+            --accent2: #38c9a6;
+            --accent2-glow: rgba(56, 201, 166, 0.12);
+            --danger: #e84f38;
+            --border: rgba(255,255,255,0.06);
+            --radius: 16px;
+            --font-display: 'Space Grotesk', sans-serif;
+            --font-body: 'DM Sans', sans-serif;
+        }
+
+        *, *::before, *::after {
+            margin: 0; padding: 0; box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%; height: 100%;
+            overflow: hidden;
+            background: var(--bg);
+            color: var(--fg);
+            font-family: var(--font-body);
+        }
+
+        /* ===== Fond animé ===== */
+        .bg-layer {
+            position: fixed; inset: 0; z-index: 0; pointer-events: none;
+        }
+        .bg-blob {
+            position: absolute; border-radius: 50%; filter: blur(120px); opacity: .35;
+            animation: blobFloat 12s ease-in-out infinite alternate;
+        }
+        .bg-blob--1 {
+            width: 500px; height: 500px; top: -10%; left: -8%;
+            background: var(--accent);
+        }
+        .bg-blob--2 {
+            width: 400px; height: 400px; bottom: -12%; right: -5%;
+            background: var(--accent2);
+            animation-delay: -6s;
+        }
+        .bg-blob--3 {
+            width: 300px; height: 300px; top: 40%; left: 50%;
+            background: var(--danger); opacity: .15;
+            animation-delay: -3s;
+        }
+        @keyframes blobFloat {
+            0%   { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(40px, -30px) scale(1.12); }
+        }
+
+        .bg-grid {
+            position: absolute; inset: 0;
+            background-image:
+                linear-gradient(rgba(255,255,255,.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,.02) 1px, transparent 1px);
+            background-size: 60px 60px;
+        }
+
+        /* ===== Diapositive ===== */
+        .slide-container {
+            position: relative; z-index: 1;
+            width: 100%; height: 100%;
+        }
+
+        .slide {
+            position: absolute; inset: 0;
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            padding: 60px 80px;
+            opacity: 0;
+            transform: translateX(60px) scale(.97);
+            transition: opacity .55s cubic-bezier(.4,0,.2,1), transform .55s cubic-bezier(.4,0,.2,1);
+            pointer-events: none;
+            will-change: opacity, transform;
+        }
+        .slide.active {
+            opacity: 1; transform: translateX(0) scale(1);
+            pointer-events: auto;
+        }
+        .slide.exit-left {
+            opacity: 0; transform: translateX(-60px) scale(.97);
+        }
+
+        /* ===== Éléments communs ===== */
+        .slide-number {
+            position: absolute; top: 28px; left: 40px;
+            font-family: var(--font-display);
+            font-size: 13px; font-weight: 600;
+            color: var(--accent); letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .slide-title {
+            font-family: var(--font-display);
+            font-size: clamp(28px, 4.5vw, 52px);
+            font-weight: 700;
+            line-height: 1.15;
+            text-align: center;
+            margin-bottom: 12px;
+        }
+        .slide-title .highlight {
+            color: var(--accent);
+        }
+
+        .slide-subtitle {
+            font-size: clamp(15px, 1.8vw, 20px);
+            color: var(--fg-muted);
+            text-align: center;
+            max-width: 680px;
+            line-height: 1.6;
+            margin-bottom: 36px;
+        }
+
+        .card-grid {
+            display: grid;
+            gap: 20px;
+            width: 100%;
+            max-width: 960px;
+        }
+        .card-grid--2 { grid-template-columns: repeat(2, 1fr); }
+        .card-grid--3 { grid-template-columns: repeat(3, 1fr); }
+        .card-grid--4 { grid-template-columns: repeat(4, 1fr); }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 28px 24px;
+            display: flex; flex-direction: column; align-items: center;
+            text-align: center;
+            transition: transform .3s, border-color .3s, box-shadow .3s;
+        }
+        .card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(232,168,56,.25);
+            box-shadow: 0 8px 32px var(--accent-glow);
+        }
+        .card-icon {
+            width: 52px; height: 52px;
+            border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 22px;
+            margin-bottom: 16px;
+            background: var(--accent-glow);
+            color: var(--accent);
+        }
+        .card-icon--teal {
+            background: var(--accent2-glow);
+            color: var(--accent2);
+        }
+        .card-icon--red {
+            background: rgba(232,79,56,.12);
+            color: var(--danger);
+        }
+        .card h3 {
+            font-family: var(--font-display);
+            font-size: 17px; font-weight: 600;
+            margin-bottom: 8px;
+        }
+        .card p {
+            font-size: 14px; color: var(--fg-muted); line-height: 1.55;
+        }
+
+        /* ===== Diapositive de titre ===== */
+        .title-badge {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: var(--accent-glow);
+            border: 1px solid rgba(232,168,56,.2);
+            border-radius: 40px;
+            padding: 8px 20px;
+            font-size: 13px; font-weight: 600;
+            color: var(--accent);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 28px;
+        }
+
+        .title-main {
+            font-family: var(--font-display);
+            font-size: clamp(36px, 6vw, 72px);
+            font-weight: 700;
+            text-align: center;
+            line-height: 1.1;
+            margin-bottom: 16px;
+        }
+        .title-main .accent { color: var(--accent); }
+
+        .title-desc {
+            font-size: clamp(16px, 2vw, 22px);
+            color: var(--fg-muted);
+            text-align: center;
+            max-width: 600px;
+            line-height: 1.6;
+            margin-bottom: 40px;
+        }
+
+        .title-author {
+            display: flex; align-items: center; gap: 12px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 60px;
+            padding: 10px 24px 10px 10px;
+        }
+        .title-avatar {
+            width: 40px; height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            display: flex; align-items: center; justify-content: center;
+            font-size: 16px; font-weight: 700; color: var(--bg);
+        }
+        .title-author span {
+            font-size: 14px; font-weight: 500; color: var(--fg);
+        }
+
+        /* ===== Schéma ===== */
+        .diagram-wrapper {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 36px;
+            max-width: 800px; width: 100%;
+        }
+        .diagram-row {
+            display: flex; align-items: center; justify-content: center;
+            gap: 16px; flex-wrap: wrap;
+        }
+        .diagram-box {
+            background: var(--bg);
+            border: 2px solid rgba(232,168,56,.3);
+            border-radius: 12px;
+            padding: 16px 22px;
+            display: flex; flex-direction: column; align-items: center;
+            gap: 6px;
+            min-width: 120px;
+            transition: border-color .3s, box-shadow .3s;
+        }
+        .diagram-box:hover {
+            border-color: var(--accent);
+            box-shadow: 0 0 20px var(--accent-glow);
+        }
+        .diagram-box i {
+            font-size: 24px; color: var(--accent);
+        }
+        .diagram-box span {
+            font-size: 13px; font-weight: 600;
+            font-family: var(--font-display);
+        }
+        .diagram-arrow {
+            font-size: 22px; color: var(--fg-muted);
+        }
+        .diagram-center {
+            background: linear-gradient(135deg, var(--accent), #d4922a);
+            border: none;
+            border-radius: 16px;
+            padding: 22px 30px;
+            display: flex; flex-direction: column; align-items: center;
+            gap: 6px;
+        }
+        .diagram-center i { font-size: 28px; color: var(--bg); }
+        .diagram-center span {
+            font-size: 15px; font-weight: 700; color: var(--bg);
+            font-family: var(--font-display);
+        }
+        .diagram-output-row {
+            margin-top: 20px;
+            display: flex; align-items: center; justify-content: center;
+            gap: 16px; flex-wrap: wrap;
+        }
+        .diagram-output-box {
+            background: var(--bg);
+            border: 2px solid rgba(56,201,166,.3);
+            border-radius: 12px;
+            padding: 14px 20px;
+            display: flex; align-items: center; gap: 10px;
+            transition: border-color .3s, box-shadow .3s;
+        }
+        .diagram-output-box:hover {
+            border-color: var(--accent2);
+            box-shadow: 0 0 20px var(--accent2-glow);
+        }
+        .diagram-output-box i { font-size: 20px; color: var(--accent2); }
+        .diagram-output-box span { font-size: 13px; font-weight: 600; }
+        .diagram-label {
+            font-size: 12px; color: var(--fg-muted);
+            text-transform: uppercase; letter-spacing: 1.5px;
+            font-weight: 600; margin-bottom: 10px;
+            text-align: center;
+        }
+
+        /* ===== Avantages / Inconvénients ===== */
+        .pros-cons {
+            display: grid; grid-template-columns: 1fr 1fr;
+            gap: 28px; max-width: 860px; width: 100%;
+        }
+        .pros-cons-col {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 28px;
+        }
+        .pros-cons-col h3 {
+            font-family: var(--font-display);
+            font-size: 20px; font-weight: 700;
+            margin-bottom: 18px;
+            display: flex; align-items: center; gap: 10px;
+        }
+        .pros-cons-col h3.pro { color: var(--accent2); }
+        .pros-cons-col h3.con { color: var(--danger); }
+        .pros-cons-col ul {
+            list-style: none; display: flex; flex-direction: column; gap: 12px;
+        }
+        .pros-cons-col li {
+            display: flex; align-items: flex-start; gap: 10px;
+            font-size: 14px; line-height: 1.5; color: var(--fg-muted);
+        }
+        .pros-cons-col li i {
+            margin-top: 3px; font-size: 14px; flex-shrink: 0;
+        }
+        .pro li i { color: var(--accent2); }
+        .con li i { color: var(--danger); }
+
+        /* ===== Conclusion ===== */
+        .conclusion-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 40px;
+            max-width: 700px; width: 100%;
+            text-align: center;
+        }
+        .conclusion-box .big-icon {
+            width: 64px; height: 64px;
+            border-radius: 18px;
+            background: var(--accent-glow);
+            color: var(--accent);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 28px;
+            margin: 0 auto 20px;
+        }
+        .conclusion-box p {
+            font-size: 16px; line-height: 1.7; color: var(--fg-muted);
+            margin-bottom: 12px;
+        }
+        .conclusion-box p strong {
+            color: var(--fg);
+        }
+
+        /* ===== Impact social – stats ===== */
+        .stat-row {
+            display: flex; gap: 24px; flex-wrap: wrap;
+            justify-content: center; margin-bottom: 28px;
+        }
+        .stat-item {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px 28px;
+            text-align: center;
+            min-width: 160px;
+            transition: transform .3s;
+        }
+        .stat-item:hover { transform: translateY(-3px); }
+        .stat-number {
+            font-family: var(--font-display);
+            font-size: 36px; font-weight: 700;
+            color: var(--accent);
+        }
+        .stat-label {
+            font-size: 13px; color: var(--fg-muted); margin-top: 4px;
+        }
+
+        /* ===== Navigation ===== */
+        .nav-bar {
+            position: fixed; bottom: 28px;
+            left: 50%; transform: translateX(-50%);
+            z-index: 100;
+            display: flex; align-items: center; gap: 12px;
+            background: rgba(22,26,32,.85);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--border);
+            border-radius: 50px;
+            padding: 10px 20px;
+        }
+        .nav-btn {
+            width: 40px; height: 40px;
+            border-radius: 50%;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--fg);
+            font-size: 16px;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: background .25s, color .25s, border-color .25s;
+        }
+        .nav-btn:hover {
+            background: var(--accent);
+            color: var(--bg);
+            border-color: var(--accent);
+        }
+        .nav-dots {
+            display: flex; gap: 6px;
+        }
+        .nav-dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: var(--fg-muted);
+            opacity: .3;
+            transition: opacity .3s, background .3s, transform .3s;
+            cursor: pointer;
+        }
+        .nav-dot.active {
+            opacity: 1; background: var(--accent);
+            transform: scale(1.3);
+        }
+
+        .slide-counter {
+            font-size: 12px; color: var(--fg-muted);
+            font-weight: 500; min-width: 40px; text-align: center;
+        }
+
+        /* ===== Progress bar ===== */
+        .progress-bar {
+            position: fixed; top: 0; left: 0;
+            height: 3px; z-index: 200;
+            background: linear-gradient(90deg, var(--accent), var(--accent2));
+            transition: width .4s cubic-bezier(.4,0,.2,1);
+            border-radius: 0 3px 3px 0;
+        }
+
+        /* ===== Étiquettes de fonction ===== */
+        .func-step {
+            display: flex; align-items: flex-start; gap: 20px;
+            max-width: 700px; width: 100%;
+            margin-bottom: 20px;
+        }
+        .func-step-num {
+            width: 44px; height: 44px;
+            border-radius: 12px;
+            background: var(--accent-glow);
+            color: var(--accent);
+            font-family: var(--font-display);
+            font-size: 18px; font-weight: 700;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        .func-step-content h4 {
+            font-family: var(--font-display);
+            font-size: 16px; font-weight: 600; margin-bottom: 4px;
+        }
+        .func-step-content p {
+            font-size: 14px; color: var(--fg-muted); line-height: 1.55;
+        }
+
+        /* ===== Responsive ===== */
+        @media (max-width: 768px) {
+            .slide { padding: 40px 24px; }
+            .card-grid--2, .card-grid--3, .card-grid--4 {
+                grid-template-columns: 1fr;
+            }
+            .pros-cons { grid-template-columns: 1fr; }
+            .stat-row { flex-direction: column; align-items: center; }
+            .diagram-row, .diagram-output-row { flex-direction: column; align-items: center; }
+            .diagram-arrow { transform: rotate(90deg); }
+        }
+
+        /* ===== Animations d'entrée ===== */
+        .slide.active .card,
+        .slide.active .stat-item,
+        .slide.active .func-step,
+        .slide.active .pros-cons-col,
+        .slide.active .diagram-box,
+        .slide.active .diagram-output-box,
+        .slide.active .conclusion-box {
+            animation: fadeUp .5s ease both;
+        }
+        .slide.active .card:nth-child(1),
+        .slide.active .stat-item:nth-child(1),
+        .slide.active .func-step:nth-child(1) { animation-delay: .08s; }
+        .slide.active .card:nth-child(2),
+        .slide.active .stat-item:nth-child(2),
+        .slide.active .func-step:nth-child(2) { animation-delay: .16s; }
+        .slide.active .card:nth-child(3),
+        .slide.active .stat-item:nth-child(3),
+        .slide.active .func-step:nth-child(3) { animation-delay: .24s; }
+        .slide.active .card:nth-child(4),
+        .slide.active .stat-item:nth-child(4) { animation-delay: .32s; }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Cane SVG animée */
+        .cane-illustration {
+            margin-bottom: 24px;
+        }
+        .cane-illustration svg {
+            filter: drop-shadow(0 0 24px var(--accent-glow));
+        }
+
+        /* Pulse animation pour icônes */
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.08); }
+        }
+        .pulse-icon {
+            animation: pulse 2.5s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Fond animé -->
+    <div class="bg-layer">
+        <div class="bg-blob bg-blob--1"></div>
+        <div class="bg-blob bg-blob--2"></div>
+        <div class="bg-blob bg-blob--3"></div>
+        <div class="bg-grid"></div>
+    </div>
+
+    <!-- Barre de progression -->
+    <div class="progress-bar" id="progressBar"></div>
+
+    <!-- Conteneur des diapositives -->
+    <div class="slide-container" id="slideContainer">
+
+        <!-- ===================== 1. TITRE ===================== -->
+        <section class="slide active" data-index="0">
+            <div class="slide-number">Diapositive 01</div>
+            <div class="cane-illustration">
+                <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
+                    <circle cx="40" cy="40" r="38" stroke="rgba(232,168,56,0.2)" stroke-width="2"/>
+                    <path d="M40 14 L40 56" stroke="#e8a838" stroke-width="4" stroke-linecap="round"/>
+                    <circle cx="40" cy="60" r="6" fill="none" stroke="#e8a838" stroke-width="2.5"/>
+                    <circle cx="40" cy="14" r="4" fill="#e8a838"/>
+                    <path d="M30 28 L40 22 L50 28" stroke="#38c9a6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.7"/>
+                    <circle cx="55" cy="30" r="3" fill="#e8a838" opacity="0.5">
+                        <animate attributeName="r" values="3;6;3" dur="2s" repeatCount="indefinite"/>
+                        <animate attributeName="opacity" values="0.5;0.1;0.5" dur="2s" repeatCount="indefinite"/>
+                    </circle>
+                </svg>
+            </div>
+            <div class="title-badge"><i class="fas fa-graduation-cap"></i> Projet scolaire — Economie</div>
+            <h1 class="title-main">Canne intelligente<br>pour les <span class="accent">personnes aveugles</span></h1>
+            <p class="title-desc">Smart Blind Stick — Un projet qui combine technologie et solidarité pour améliorer la vie des personnes malvoyantes.</p>
+            <div class="title-author">
+                <div class="title-avatar">E</div>
+                <span>Élève : <strong>Votre Nom</strong> — Classe de 2nde</span>
+            </div>
+        </section>
+
+        <!-- ===================== 2. PROBLÈME ===================== -->
+        <section class="slide" data-index="1">
+            <div class="slide-number">Diapositive 02</div>
+            <h2 class="slide-title">Le <span class="highlight">Problème</span></h2>
+            <p class="slide-subtitle">Les personnes aveugles ou malvoyantes rencontrent de nombreuses difficultés dans leur vie quotidienne.</p>
+            <div class="card-grid card-grid--3">
+                <div class="card">
+                    <div class="card-icon card-icon--red"><i class="fas fa-person-walking"></i></div>
+                    <h3>Déplacement difficile</h3>
+                    <p>Obstacles non détectés : murs, poteaux, trous dans le sol, véhicules stationnés.</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon card-icon--red"><i class="fas fa-hand"></i></div>
+                    <h3>Canne classique limitée</h3>
+                    <p>La canne blanche ne détecte que les obstacles au niveau du sol, pas en hauteur.</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon card-icon--red"><i class="fas fa-triangle-exclamation"></i></div>
+                    <h3>Risque d'accidents</h3>
+                    <p>Chutes, collisions et blessures fréquentes, surtout dans les endroits inconnus.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================== 3. SOLUTION ===================== -->
+        <section class="slide" data-index="2">
+            <div class="slide-number">Diapositive 03</div>
+            <h2 class="slide-title">La <span class="highlight">Solution</span></h2>
+            <p class="slide-subtitle">Une canne équipée de capteurs électroniques qui alerte l'utilisateur avant le contact avec un obstacle.</p>
+            <div class="card-grid card-grid--2">
+                <div class="card">
+                    <div class="card-icon"><i class="fas fa-satellite-dish"></i></div>
+                    <h3>Détection automatique</h3>
+                    <p>Les capteurs ultrasons repèrent les obstacles à distance, même en hauteur, sans besoin de les toucher.</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon card-icon--teal"><i class="fas fa-bell"></i></div>
+                    <h3>Alerte immédiate</h3>
+                    <p>Vibration et son (buzzer) qui s'intensifient quand l'obstacle est plus proche. Réaction rapide et intuitive.</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon"><i class="fas fa-microchip"></i></div>
+                    <h3>Technologie embarquée</h3>
+                    <p>Carte Arduino légère et programmable, intégrée directement dans le manche de la canne.</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon card-icon--teal"><i class="fas fa-coins"></i></div>
+                    <h3>Coût abordable</h3>
+                    <p>Composants électroniques peu chers. Prix total estimé entre 20 et 35 euros seulement.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================== 4. FONCTIONNEMENT ===================== -->
+        <section class="slide" data-index="3">
+            <div class="slide-number">Diapositive 04</div>
+            <h2 class="slide-title">Comment ça <span class="highlight">fonctionne</span> ?</h2>
+            <p class="slide-subtitle">Le système fonctionne en 4 étapes simples, de la détection à l'alerte.</p>
+            <div class="func-step">
+                <div class="func-step-num">1</div>
+                <div class="func-step-content">
+                    <h4>Emission ultrasonore</h4>
+                    <p>Le capteur ultrason (HC-SR04) envoie des ondes sonores inaudibles vers l'avant, comme un radar miniature.</p>
+                </div>
+            </div>
+            <div class="func-step">
+                <div class="func-step-num">2</div>
+                <div class="func-step-content">
+                    <h4>Réflexion sur l'obstacle</h4>
+                    <p>Les ondes rebondissent sur l'obstacle et reviennent vers le capteur. Le temps de retour indique la distance.</p>
+                </div>
+            </div>
+            <div class="func-step">
+                <div class="func-step-num">3</div>
+                <div class="func-step-content">
+                    <h4>Traitement par Arduino</h4>
+                    <p>La carte Arduino calcule la distance en temps réel et décide du niveau d'alerte à déclencher.</p>
+                </div>
+            </div>
+            <div class="func-step">
+                <div class="func-step-num">4</div>
+                <div class="func-step-content">
+                    <h4>Alerte : vibration + son</h4>
+                    <p>Le moteur vibrant et le buzzer s'activent. Plus l'obstacle est proche, plus la vibration et le son sont intenses.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================== 5. COMPOSANTS ===================== -->
+        <section class="slide" data-index="4">
+            <div class="slide-number">Diapositive 05</div>
+            <h2 class="slide-title"><span class="highlight">Composants</span> utilisés</h2>
+            <p class="slide-subtitle">Tous les éléments électroniques nécessaires, faciles à trouver et peu coûteux.</p>
+            <div class="card-grid card-grid--4">
+                <div class="card">
+                    <div class="card-icon"><i class="fas fa-microchip"></i></div>
+                    <h3>Arduino Nano</h3>
+                    <p>Cerveau du projet. Microcontrôleur programmable, compact et économique. ~4 euros</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon"><i class="fas fa-wave-square"></i></div>
+                    <h3>Capteur HC-SR04</h3>
+                    <p>Capteur ultrason. Mesure la distance de 2 cm à 4 m. Précis et fiable. ~2 euros</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon card-icon--teal"><i class="fas fa-mobile-screen-button"></i></div>
+                    <h3>Moteur vibrant</h3>
+                    <p>Petit moteur à vibration (comme dans un téléphone). Alerte tactile silencieuse. ~1 euro</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon card-icon--red"><i class="fas fa-volume-high"></i></div>
+                    <h3>Buzzer</h3>
+                    <p>Haut-parleur miniature. Émet un bip sonore qui change selon la distance. ~0,50 euro</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon"><i class="fas fa-battery-full"></i></div>
+                    <h3>Batterie 9V</h3>
+                    <p>Alimentation portable. Autonomie de plusieurs heures. Rechargeable. ~3 euros</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon"><i class="fas fa-plug"></i></div>
+                    <h3>Câbles et breadboard</h3>
+                    <p>Fils de connexion et platine d'essai pour assembler le circuit sans soudure. ~2 euros</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon card-icon--teal"><i class="fas fa-lightbulb"></i></div>
+                    <h3>LED indicatrice</h3>
+                    <p>Voyant lumineux (optionnel) pour indiquer l'état du système. ~0,20 euro</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon card-icon--red"><i class="fas fa-toggle-on"></i></div>
+                    <h3>Interrupteur</h3>
+                    <p>Pour allumer / éteindre la canne. Simple et robuste. ~0,30 euro</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================== 6. VALEUR ÉCONOMIQUE ===================== -->
+        <section class="slide" data-index="5">
+            <div class="slide-number">Diapositive 06</div>
+            <h2 class="slide-title">Valeur <span class="highlight">économique</span></h2>
+            <p class="slide-subtitle">Un produit à la fois utile et rentable, qui répond à un besoin réel du marché.</p>
+            <div class="card-grid card-grid--3">
+                <div class="card">
+                    <div class="card-icon"><i class="fas fa-tag"></i></div>
+                    <h3>Coût de fabrication faible</h3>
+                    <p>Matériel électronique courant, disponible partout. Prix de revient : environ 20-35 euros par canne. Production en série encore moins chère.</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon card-icon--teal"><i class="fas fa-chart-line"></i></div>
+                    <h3>Marché potentiel</h3>
+                    <p>2,2 milliards de personnes malvoyantes dans le monde (OMS). En France, 1,7 million de personnes concernées. La demande est réelle.</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon"><i class="fas fa-hand-holding-dollar"></i></div>
+                    <h3>Prix de vente accessible</h3>
+                    <p>Vente estimée à 50-70 euros. Bien moins cher que les cannes électroniques existantes (200-800 euros). Marge confortable possible.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================== 7. IMPACT SOCIAL ===================== -->
+        <section class="slide" data-index="6">
+            <div class="slide-number">Diapositive 07</div>
+            <h2 class="slide-title">Impact <span class="highlight">social</span></h2>
+            <p class="slide-subtitle">Ce projet a un réel impact positif sur la vie des personnes en situation de handicap visuel.</p>
+            <div class="stat-row">
+                <div class="stat-item">
+                    <div class="stat-number">2,2 Mrd</div>
+                    <div class="stat-label">Personnes malvoyantes dans le monde</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">70%</div>
+                    <div class="stat-label">Des accidents évitables avec une alerte</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">100%</div>
+                    <div class="stat-label">D'autonomie gagnée en déplacement</div>
+                </div>
+            </div>
+            <div class="card-grid card-grid--3">
+                <div class="card">
+                    <div class="card-icon"><i class="fas fa-universal-access"></i></div>
+                    <h3>Accessibilité</h3>
+                    <p>Technologie simple et abordable. Accessible à tous les revenus, y compris dans les pays en développement.</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon card-icon--teal"><i class="fas fa-heart"></i></div>
+                    <h3>Autonomie</h3>
+                    <p>Les personnes aveugles peuvent se déplacer seules avec plus de confiance et de sécurité au quotidien.</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon"><i class="fas fa-people-group"></i></div>
+                    <h3>Inclusion</h3>
+                    <p>Participation plus active à la vie sociale, scolaire et professionnelle. Réduction de l'isolement.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================== 8. SCHÉMA DU SYSTÈME ===================== -->
+        <section class="slide" data-index="7">
+            <div class="slide-number">Diapositive 08</div>
+            <h2 class="slide-title">Schéma du <span class="highlight">système</span></h2>
+            <p class="slide-subtitle">Voici comment les composants sont reliés entre eux dans la canne intelligente.</p>
+            <div class="diagram-wrapper">
+                <div class="diagram-label">Entrée (Détection)</div>
+                <div class="diagram-row">
+                    <div class="diagram-box">
+                        <i class="fas fa-wave-square"></i>
+                        <span>Capteur Ultrason</span>
+                    </div>
+                    <div class="diagram-arrow"><i class="fas fa-arrow-right"></i></div>
+                    <div class="diagram-center">
+                        <i class="fas fa-microchip"></i>
+                        <span>Arduino Nano</span>
+                    </div>
+                    <div class="diagram-arrow"><i class="fas fa-arrow-right"></i></div>
+                    <div class="diagram-box" style="border-color: rgba(56,201,166,.3);">
+                        <i class="fas fa-bolt" style="color: var(--accent2);"></i>
+                        <span>Traitement</span>
+                    </div>
+                </div>
+                <div class="diagram-label" style="margin-top: 28px;">Sortie (Alerte)</div>
+                <div class="diagram-output-row">
+                    <div class="diagram-output-box">
+                        <i class="fas fa-mobile-screen-button"></i>
+                        <span>Vibration</span>
+                    </div>
+                    <div class="diagram-output-box">
+                        <i class="fas fa-volume-high"></i>
+                        <span>Buzzer sonore</span>
+                    </div>
+                    <div class="diagram-output-box">
+                        <i class="fas fa-lightbulb"></i>
+                        <span>LED</span>
+                    </div>
+                </div>
+                <div style="margin-top: 24px; text-align: center;">
+                    <div class="diagram-label">Alimentation</div>
+                    <div class="diagram-row" style="justify-content: center;">
+                        <div class="diagram-box" style="border-color: rgba(232,79,56,.3);">
+                            <i class="fas fa-battery-full" style="color: var(--danger);"></i>
+                            <span>Batterie 9V</span>
+                        </div>
+                        <div class="diagram-arrow"><i class="fas fa-arrow-right"></i></div>
+                        <div class="diagram-box" style="border-color: rgba(232,79,56,.3);">
+                            <i class="fas fa-toggle-on" style="color: var(--danger);"></i>
+                            <span>Interrupteur</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================== 9. AVANTAGES / INCONVÉNIENTS ===================== -->
+        <section class="slide" data-index="8">
+            <div class="slide-number">Diapositive 09</div>
+            <h2 class="slide-title">Avantages et <span class="highlight">Inconvénients</span></h2>
+            <p class="slide-subtitle">Comme tout projet, la canne intelligente a des points forts et des limites à considérer.</p>
+            <div class="pros-cons">
+                <div class="pros-cons-col">
+                    <h3 class="pro"><i class="fas fa-circle-check"></i> Avantages</h3>
+                    <ul>
+                        <li><i class="fas fa-check"></i> Détection des obstacles en hauteur et au sol</li>
+                        <li><i class="fas fa-check"></i> Coût très bas comparé aux solutions existantes</li>
+                        <li><i class="fas fa-check"></i> Facile à fabriquer et à réparer</li>
+                        <li><i class="fas fa-check"></i> Double alerte (vibration + son)</li>
+                        <li><i class="fas fa-check"></i> Léger et portable</li>
+                        <li><i class="fas fa-check"></i> Impact social positif et mesurable</li>
+                        <li><i class="fas fa-check"></i> Open source : code modifiable et améliorable</li>
+                    </ul>
+                </div>
+                <div class="pros-cons-col">
+                    <h3 class="con"><i class="fas fa-circle-xmark"></i> Inconvénients</h3>
+                    <ul>
+                        <li><i class="fas fa-xmark"></i> Portée limitée du capteur (~4 mètres max)</li>
+                        <li><i class="fas fa-xmark"></i> Ne détecte pas les surfaces molles (herbe, tissu)</li>
+                        <li><i class="fas fa-xmark"></i> Autonomie de batterie limitée (~4-6 heures)</li>
+                        <li><i class="fas fa-xmark"></i> Peut déranger l'ouïe avec le buzzer en public</li>
+                        <li><i class="fas fa-xmark"></i> Nécessite un minimum d'apprentissage</li>
+                        <li><i class="fas fa-xmark"></i> Pas de détection des escaliers descendants</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================== 10. CONCLUSION ===================== -->
+        <section class="slide" data-index="9">
+            <div class="slide-number">Diapositive 10</div>
+            <h2 class="slide-title"><span class="highlight">Conclusion</span></h2>
+            <p class="slide-subtitle">Un projet qui prouve que la technologie peut servir le bien commun, même avec peu de moyens.</p>
+            <div class="conclusion-box">
+                <div class="big-icon pulse-icon"><i class="fas fa-lightbulb"></i></div>
+                <p>La <strong>canne intelligente</strong> est une solution concrète, peu coûteuse et efficace pour améliorer la sécurité et l'autonomie des personnes aveugles.</p>
+                <p>Elle montre que <strong>l'innovation n'est pas réservée aux grands laboratoires</strong> : avec des composants simples et de la créativité, on peut créer un produit utile à des millions de personnes.</p>
+                <p>Ce projet a une <strong>valeur économique réelle</strong> (marché important, coût faible) et un <strong>impact social mesurable</strong> (sécurité, autonomie, inclusion).</p>
+                <p style="margin-top: 20px; color: var(--accent); font-weight: 600; font-family: var(--font-display); font-size: 18px;">Merci de votre attention !</p>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- Barre de navigation -->
+    <nav class="nav-bar" aria-label="Navigation entre diapositives">
+        <button class="nav-btn" id="btnPrev" aria-label="Diapositive précédente"><i class="fas fa-chevron-left"></i></button>
+        <div class="nav-dots" id="navDots"></div>
+        <span class="slide-counter" id="slideCounter">1 / 10</span>
+        <button class="nav-btn" id="btnNext" aria-label="Diapositive suivante"><i class="fas fa-chevron-right"></i></button>
+    </nav>
+
+    <script>
+        // ===== Gestion du diaporama =====
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+        let currentSlide = 0;
+
+        const navDots = document.getElementById('navDots');
+        const slideCounter = document.getElementById('slideCounter');
+        const progressBar = document.getElementById('progressBar');
+
+        // Créer les points de navigation
+        for (let i = 0; i < totalSlides; i++) {
+            const dot = document.createElement('div');
+            dot.classList.add('nav-dot');
+            if (i === 0) dot.classList.add('active');
+            dot.setAttribute('aria-label', `Aller à la diapositive ${i + 1}`);
+            dot.addEventListener('click', () => goToSlide(i));
+            navDots.appendChild(dot);
+        }
+
+        // Mettre à jour l'affichage
+        function updateUI() {
+            // Compteur
+            slideCounter.textContent = `${currentSlide + 1} / ${totalSlides}`;
+
+            // Points
+            document.querySelectorAll('.nav-dot').forEach((dot, i) => {
+                dot.classList.toggle('active', i === currentSlide);
+            });
+
+            // Barre de progression
+            const progress = ((currentSlide + 1) / totalSlides) * 100;
+            progressBar.style.width = progress + '%';
+        }
+
+        // Aller à une diapositive précise
+        function goToSlide(index) {
+    if (index === currentSlide || index < 0 || index >= totalSlides) return;
+
+    const direction = index > currentSlide ? 1 : -1;
+
+    const current = slides[currentSlide];
+    const incoming = slides[index];
+
+    // Remove current active slide
+    current.classList.remove('active');
+
+    // Prepare incoming slide
+    incoming.style.transition = 'none';
+    incoming.style.transform = direction > 0
+        ? 'translateX(80px) scale(.97)'
+        : 'translateX(-80px) scale(.97)';
+    incoming.style.opacity = '0';
+
+    // Force browser refresh
+    void incoming.offsetWidth;
+
+    // Activate new slide
+    incoming.style.transition = '';
+    incoming.classList.add('active');
+
+    // Animate correctly
+    incoming.style.transform = '';
+    incoming.style.opacity = '';
+
+    currentSlide = index;
+
+    updateUI();
+}
+        function nextSlide() {
+            if (currentSlide < totalSlides - 1) goToSlide(currentSlide + 1);
+        }
+
+        function prevSlide() {
+            if (currentSlide > 0) goToSlide(currentSlide - 1);
+        }
+
+        // Boutons
+        document.getElementById('btnNext').addEventListener('click', nextSlide);
+        document.getElementById('btnPrev').addEventListener('click', prevSlide);
+
+        // Clavier
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') {
+                e.preventDefault();
+                nextSlide();
+            } else if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                prevSlide();
+            } else if (e.key === 'Home') {
+                e.preventDefault();
+                goToSlide(0);
+            } else if (e.key === 'End') {
+                e.preventDefault();
+                goToSlide(totalSlides - 1);
+            }
+        });
+
+        // Swipe tactile
+        let touchStartX = 0;
+        let touchEndX = 0;
+        document.addEventListener('touchstart', (e) => {
+            touchStartX = e.changedTouches[0].screenX;
+        }, { passive: true });
+        document.addEventListener('touchend', (e) => {
+            touchEndX = e.changedTouches[0].screenX;
+            const diff = touchStartX - touchEndX;
+            if (Math.abs(diff) > 50) {
+                if (diff > 0) nextSlide();
+                else prevSlide();
+            }
+        }, { passive: true });
+
+        // Initialisation
+        updateUI();
+    </script>
+</body>
+</html>
