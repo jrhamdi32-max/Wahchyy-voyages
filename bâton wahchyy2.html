@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bâton Wahchyy — Smart Blind Stick</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      fontFamily: { sans: ['Inter', 'sans-serif'] },
+    }
+  }
+}
+</script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { overflow: hidden; height: 100%; font-family: 'Inter', sans-serif; }
+
+  .slide {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
+    opacity: 0; transform: translateX(60px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+    pointer-events: none; padding: 60px 80px;
+  }
+  .slide.active {
+    opacity: 1; transform: translateX(0);
+    pointer-events: all;
+  }
+  .slide.exit-left {
+    opacity: 0; transform: translateX(-60px);
+  }
+
+  .slide-number {
+    position: absolute; bottom: 30px; right: 40px;
+    font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.3);
+    letter-spacing: 0.05em;
+  }
+
+  .progress-bar {
+    position: fixed; top: 0; left: 0; height: 3px;
+    background: linear-gradient(to right, #10b981, #34d399);
+    transition: width 0.4s ease; z-index: 100;
+  }
+
+  .stagger-1 { animation: fadeUp 0.6s 0.1s both; }
+  .stagger-2 { animation: fadeUp 0.6s 0.25s both; }
+  .stagger-3 { animation: fadeUp 0.6s 0.4s both; }
+  .stagger-4 { animation: fadeUp 0.6s 0.55s both; }
+  .stagger-5 { animation: fadeUp 0.6s 0.7s both; }
+  .stagger-6 { animation: fadeUp 0.6s 0.85s both; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(25px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes pulse-ring {
+    0% { transform: scale(1); opacity: 0.5; }
+    100% { transform: scale(1.8); opacity: 0; }
+  }
+  .pulse-ring::before {
+    content: ''; position: absolute; inset: -8px;
+    border-radius: 50%; border: 2px solid #10b981;
+    animation: pulse-ring 2s ease-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+  .float { animation: float 3s ease-in-out infinite; }
+
+  .component-card {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 16px; padding: 24px;
+    transition: all 0.3s ease;
+  }
+  .component-card:hover {
+    background: rgba(16,185,129,0.1);
+    border-color: rgba(16,185,129,0.3);
+    transform: translateY(-4px);
+  }
+
+  .glow-orb {
+    position: absolute; border-radius: 50%; filter: blur(100px); pointer-events: none;
+  }
+
+  .diagram-box {
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 12px; padding: 14px 20px;
+    text-align: center; font-size: 14px; font-weight: 500;
+    transition: all 0.3s;
+  }
+  .diagram-box:hover {
+    background: rgba(16,185,129,0.15);
+    border-color: #10b981;
+  }
+
+  .arrow-down::after {
+    content: '↓'; display: block; text-align: center;
+    font-size: 24px; color: #10b981; margin: 8px 0;
+  }
+  .arrow-right::after {
+    content: '→'; font-size: 24px; color: #10b981; margin: 0 12px;
+  }
+
+  .nav-btn {
+    width: 48px; height: 48px; border-radius: 50%;
+    background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
+    color: white; display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: all 0.3s;
+  }
+  .nav-btn:hover { background: rgba(16,185,129,0.2); border-color: #10b981; }
+  .nav-btn:active { transform: scale(0.92); }
+
+  .tag {
+    display: inline-block; padding: 4px 14px; border-radius: 999px;
+    font-size: 12px; font-weight: 500; letter-spacing: 0.04em;
+  }
+
+  @media (max-width: 768px) {
+    .slide { padding: 40px 24px; }
+  }
+</style>
+</head>
+<body class="bg-slate-950 text-white">
+
+<!-- Progress Bar -->
+<div class="progress-bar" id="progressBar" style="width: 10%"></div>
+
+<!-- Navigation -->
+<div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-4 bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-full px-6 py-3">
+  <button class="nav-btn" onclick="changeSlide(-1)" id="prevBtn">
+    <i data-lucide="chevron-left" class="w-5 h-5"></i>
+  </button>
+  <div class="flex gap-2" id="dots"></div>
+  <button class="nav-btn" onclick="changeSlide(1)" id="nextBtn">
+    <i data-lucide="chevron-right" class="w-5 h-5"></i>
+  </button>
+</div>
+
+<!-- Slide counter -->
+<div class="fixed top-6 right-8 z-50 text-sm text-white/40 font-mono" id="slideCounter">01 / 10</div>
+
+<!-- ======================== SLIDE 1 : TITRE ======================== -->
+<div class="slide active" id="slide-0">
+  <div class="glow-orb w-96 h-96 bg-emerald-500/20 -top-20 -left-20"></div>
+  <div class="glow-orb w-72 h-72 bg-emerald-600/10 bottom-10 right-10"></div>
+
+  <div class="text-center max-w-4xl">
+    <div class="stagger-1 inline-flex items-center gap-2 tag bg-emerald-500/15 text-emerald-400 border border-emerald-500/20 mb-8">
+      <i data-lucide="graduation-cap" class="w-4 h-4"></i>
+      Projet Économie — Lycée
+    </div>
+
+    <h1 class="stagger-2 text-5xl md:text-7xl font-semibold tracking-tight leading-[1.05] mb-4">
+      Bâton <span class="text-emerald-400">Wahchyy</span>
+    </h1>
+    <p class="stagger-3 text-xl md:text-2xl text-white/50 font-light mb-10">
+      Canne intelligente pour les personnes aveugles
+    </p>
+
+    <div class="stagger-4 flex flex-wrap justify-center gap-6 text-sm text-white/60 mb-12">
+      <span class="flex items-center gap-2"><i data-lucide="user" class="w-4 h-4 text-emerald-400"></i> Houssine</span>
+      <span class="flex items-center gap-2"><i data-lucide="user" class="w-4 h-4 text-emerald-400"></i> Anjed</span>
+      <span class="flex items-center gap-2"><i data-lucide="user" class="w-4 h-4 text-emerald-400"></i> Zakaria</span>
+    </div>
+
+    <div class="stagger-5 float">
+      <div class="relative inline-flex items-center justify-center w-20 h-20 rounded-full bg-emerald-500/20 border border-emerald-500/30 pulse-ring">
+        <i data-lucide="eye" class="w-9 h-9 text-emerald-400"></i>
+      </div>
+    </div>
+  </div>
+  <div class="slide-number">01</div>
+</div>
+
+<!-- ======================== SLIDE 2 : PROBLÈME ======================== -->
+<div class="slide" id="slide-1">
+  <div class="glow-orb w-80 h-80 bg-red-500/10 top-10 right-0"></div>
+  <div class="max-w-4xl w-full">
+    <div class="stagger-1 tag bg-red-500/15 text-red-400 border border-red-500/20 mb-6">
+      <i data-lucide="alert-triangle" class="w-4 h-4 inline mr-1"></i> Le Problème
+    </div>
+
+    <h2 class="stagger-2 text-4xl md:text-5xl font-semibold tracking-tight mb-8">
+      Les personnes aveugles face <span class="text-red-400">aux obstacles</span>
+    </h2>
+
+    <div class="stagger-3 grid md:grid-cols-2 gap-6 mb-8">
+      <div class="component-card">
+        <div class="flex items-start gap-4">
+          <div class="w-12 h-12 rounded-xl bg-red-500/15 flex items-center justify-center flex-shrink-0">
+            <i data-lucide="footprints" class="w-6 h-6 text-red-400"></i>
+          </div>
+          <div>
+            <h4 class="font-medium mb-1">Déplacement difficile</h4>
+            <p class="text-sm text-white/50">Les cannes classiques ne détectent que les obstacles au sol, pas en hauteur.</p>
+          </div>
+        </div>
+      </div>
+      <div class="component-card">
+        <div class="flex items-start gap-4">
+          <div class="w-12 h-12 rounded-xl bg-red-500/15 flex items-center justify-center flex-shrink-0">
+            <i data-lucide="shield-alert" class="w-6 h-6 text-red-400"></i>
+          </div>
+          <div>
+            <h4 class="font-medium mb-1">Risque d'accidents</h4>
+            <p class="text-sm text-white/50">Chocs avec des murs, poteaux, branches… blessures fréquentes.</p>
+          </div>
+        </div>
+      </div>
+      <div class="component-card">
+        <div class="flex items-start gap-4">
+          <div class="w-12 h-12 rounded-xl bg-red-500/15 flex items-center justify-center flex-shrink-0">
+            <i data-lucide="heart" class="w-6 h-6 text-red-400"></i>
+          </div>
+          <div>
+            <h4 class="font-medium mb-1">Perte d'autonomie</h4>
+            <p class="text-sm text-white/50">Dépendance aux autres pour les trajets quotidiens.</p>
+          </div>
+        </div>
+      </div>
+      <div class="component-card">
+        <div class="flex items-start gap-4">
+          <div class="w-12 h-12 rounded-xl bg-red-500/15 flex items-center justify-center flex-shrink-0">
+            <i data-lucide="ban" class="w-6 h-6 text-red-400"></i>
+          </div>
+          <div>
+            <h4 class="font-medium mb-1">Peu de solutions abordables</h4>
+            <p class="text-sm text-white/50">Les technologies existantes sont souvent très chères et inaccessibles.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="stagger-4 bg-red-500/10 border border-red-500/20 rounded-2xl p-5 flex items-center gap-4">
+      <i data-lucide="info" class="w-6 h-6 text-red-400 flex-shrink-0"></i>
+      <p class="text-sm text-white/70"><strong class="text-red-300">2,2 milliards</strong> de personnes dans le monde ont une déficience visuelle selon l'OMS. La majorité vit dans des pays en développement.</p>
+    </div>
+  </div>
+  <div class="slide-number">02</div>
+</div>
+
+<!-- ======================== SLIDE 3 : SOLUTION ======================== -->
+<div class="slide" id="slide-2">
+  <div class="glow-orb w-96 h-96 bg-emerald-500/15 -bottom-20 -left-20"></div>
+  <div class="max-w-4xl w-full">
+    <div class="stagger-1 tag bg-emerald-500/15 text-emerald-400 border border-emerald-500/20 mb-6">
+      <i data-lucide="lightbulb" class="w-4 h-4 inline mr-1"></i> La Solution
+    </div>
+
+    <h2 class="stagger-2 text-4xl md:text-5xl font-semibold tracking-tight mb-8">
+      La canne <span class="text-emerald-400">intelligente</span>
+    </h2>
+
+    <div class="stagger-3 flex flex-col md:flex-row gap-8 items-center mb-10">
+      <div class="relative flex-shrink-0">
+        <img src="https://picsum.photos/seed/smartstick-white/400/400.jpg" alt="Canne intelligente" class="w-60 h-60 object-cover rounded-3xl border border-white/10 shadow-2xl shadow-emerald-500/10" />
+        <div class="absolute -top-3 -right-3 w-10 h-10 rounded-full bg-emerald-500 flex items-center justify-center">
+          <i data-lucide="check" class="w-5 h-5 text-white"></i>
+        </div>
+      </div>
+      <div class="space-y-4">
+        <p class="text-lg text-white/70 leading-relaxed">
+          Le <strong class="text-emerald-400">Bâton Wahchyy</strong> est une canne équipée de capteurs électroniques qui <strong>détectent les obstacles</strong> et <strong>alertent l'utilisateur</strong> en temps réel par vibration et son.
+        </p>
+        <p class="text-lg text-white/70 leading-relaxed">
+          Une solution <strong>simple</strong>, <strong>peu coûteuse</strong> et <strong>accessible à tous</strong>.
+        </p>
+      </div>
+    </div>
+
+    <div class="stagger-4 grid grid-cols-3 gap-4">
+      <div class="text-center p-5 rounded-2xl bg-white/5 border border-white/10">
+        <div class="w-12 h-12 mx-auto mb-3 rounded-xl bg-emerald-500/15 flex items-center justify-center">
+          <i data-lucide="radar" class="w-6 h-6 text-emerald-400"></i>
+        </div>
+        <h4 class="font-medium text-sm mb-1">Détecte</h4>
+        <p class="text-xs text-white/40">Obstacles à distance</p>
+      </div>
+      <div class="text-center p-5 rounded-2xl bg-white/5 border border-white/10">
+        <div class="w-12 h-12 mx-auto mb-3 rounded-xl bg-emerald-500/15 flex items-center justify-center">
+          <i data-lucide="vibrate" class="w-6 h-6 text-emerald-400"></i>
+        </div>
+        <h4 class="font-medium text-sm mb-1">Alerte</h4>
+        <p class="text-xs text-white/40">Vibration + son</p>
+      </div>
+      <div class="text-center p-5 rounded-2xl bg-white/5 border border-white/10">
+        <div class="w-12 h-12 mx-auto mb-3 rounded-xl bg-emerald-500/15 flex items-center justify-center">
+          <i data-lucide="shield-check" class="w-6 h-6 text-emerald-400"></i>
+        </div>
+        <h4 class="font-medium text-sm mb-1">Protège</h4>
+        <p class="text-xs text-white/40">Évite les accidents</p>
+      </div>
+    </div>
+  </div>
+  <div class="slide-number">03</div>
+</div>
+
+<!-- ======================== SLIDE 4 : FONCTIONNEMENT ======================== -->
+<div class="slide" id="slide-3">
+  <div class="glow-orb w-72 h-72 bg-cyan-500/10 top-20 right-20"></div>
+  <div class="max-w-4xl w-full">
+    <div class="stagger-1 tag bg-cyan-500/15 text-cyan-400 border border-cyan-500/20 mb-6">
+      <i data-lucide="settings" class="w-4 h-4 inline mr-1"></i> Fonctionnement
+    </div>
+
+    <h2 class="stagger-2 text-4xl md:text-5xl font-semibold tracking-tight mb-10">
+      Comment ça <span class="text-cyan-400">marche ?</span>
+    </h2>
+
+    <div class="stagger-3 space-y-0">
+      <!-- Step 1 -->
+      <div class="flex items-start gap-6">
+        <div class="flex flex-col items-center">
+          <div class="w-14 h-14 rounded-2xl bg-cyan-500/15 border border-cyan-500/25 flex items-center justify-center">
+            <i data-lucide="radar" class="w-7 h-7 text-cyan-400"></i>
+          </div>
+          <div class="w-0.5 h-12 bg-white/10"></div>
+        </div>
+        <div class="pt-2">
+          <h4 class="font-semibold text-lg mb-1">1. Détection</h4>
+          <p class="text-white/50 text-sm">Le <strong class="text-cyan-300">capteur ultrason</strong> envoie des ondes sonores et mesure le temps de retour pour calculer la distance d'un obstacle.</p>
+        </div>
+      </div>
+      <!-- Step 2 -->
+      <div class="flex items-start gap-6">
+        <div class="flex flex-col items-center">
+          <div class="w-14 h-14 rounded-2xl bg-emerald-500/15 border border-emerald-500/25 flex items-center justify-center">
+            <i data-lucide="cpu" class="w-7 h-7 text-emerald-400"></i>
+          </div>
+          <div class="w-0.5 h-12 bg-white/10"></div>
+        </div>
+        <div class="pt-2">
+          <h4 class="font-semibold text-lg mb-1">2. Analyse</h4>
+          <p class="text-white/50 text-sm">L'<strong class="text-emerald-300">Arduino</strong> (microcontrôleur) reçoit les données, analyse la distance et décide si l'obstacle est trop proche.</p>
+        </div>
+      </div>
+      <!-- Step 3 -->
+      <div class="flex items-start gap-6">
+        <div class="flex flex-col items-center">
+          <div class="w-14 h-14 rounded-2xl bg-amber-500/15 border border-amber-500/25 flex items-center justify-center">
+            <i data-lucide="vibrate" class="w-7 h-7 text-amber-400"></i>
+          </div>
+          <div class="w-0.5 h-12 bg-white/10"></div>
+        </div>
+        <div class="pt-2">
+          <h4 class="font-semibold text-lg mb-1">3. Alerte — Vibration</h4>
+          <p class="text-white/50 text-sm">Un <strong class="text-amber-300">moteur vibrant</strong> s'active dans la poignée. Plus l'obstacle est proche, plus la vibration est forte.</p>
+        </div>
+      </div>
+      <!-- Step 4 -->
+      <div class="flex items-start gap-6">
+        <div class="flex flex-col items-center">
+          <div class="w-14 h-14 rounded-2xl bg-rose-500/15 border border-rose-500/25 flex items-center justify-center">
+            <i data-lucide="volume-2" class="w-7 h-7 text-rose-400"></i>
+          </div>
+        </div>
+        <div class="pt-2">
+          <h4 class="font-semibold text-lg mb-1">4. Alerte — Sonore</h4>
+          <p class="text-white/50 text-sm">Un <strong class="text-rose-300">buzzer</strong> émet un bip sonore. La fréquence augmente quand l'obstacle se rapproche.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-number">04</div>
+</div>
+
+<!-- ======================== SLIDE 5 : COMPOSANTS ======================== -->
+<div class="slide" id="slide-4">
+  <div class="glow-orb w-80 h-80 bg-violet-500/10 bottom-0 left-10"></div>
+  <div class="max-w-4xl w-full">
+    <div class="stagger-1 tag bg-violet-500/15 text-violet-400 border border-violet-500/20 mb-6">
+      <i data-lucide="wrench" class="w-4 h-4 inline mr-1"></i> Composants
+    </div>
+
+    <h2 class="stagger-2 text-4xl md:text-5xl font-semibold tracking-tight mb-10">
+      Les pièces <span class="text-violet-400">utilisées</span>
+    </h2>
+
+    <div class="stagger-3 grid grid-cols-2 md:grid-cols-3 gap-4">
+      <div class="component-card text-center">
+        <div class="w-14 h-14 mx-auto mb-3 rounded-2xl bg-sky-500/15 flex items-center justify-center">
+          <i data-lucide="cpu" class="w-7 h-7 text-sky-400"></i>
+        </div>
+        <h4 class="font-semibold mb-1">Arduino Nano</h4>
+        <p class="text-xs text-white/40">Cerveau du système — 35 DH</p>
+      </div>
+      <div class="component-card text-center">
+        <div class="w-14 h-14 mx-auto mb-3 rounded-2xl bg-cyan-500/15 flex items-center justify-center">
+          <i data-lucide="radar" class="w-7 h-7 text-cyan-400"></i>
+        </div>
+        <h4 class="font-semibold mb-1">Capteur HC-SR04</h4>
+        <p class="text-xs text-white/40">Ultrason — 15 DH</p>
+      </div>
+      <div class="component-card text-center">
+        <div class="w-14 h-14 mx-auto mb-3 rounded-2xl bg-amber-500/15 flex items-center justify-center">
+          <i data-lucide="vibrate" class="w-7 h-7 text-amber-400"></i>
+        </div>
+        <h4 class="font-semibold mb-1">Moteur vibrant</h4>
+        <p class="text-xs text-white/40">Alerte tactile — 10 DH</p>
+      </div>
+      <div class="component-card text-center">
+        <div class="w-14 h-14 mx-auto mb-3 rounded-2xl bg-rose-500/15 flex items-center justify-center">
+          <i data-lucide="volume-2" class="w-7 h-7 text-rose-400"></i>
+        </div>
+        <h4 class="font-semibold mb-1">Buzzer</h4>
+        <p class="text-xs text-white/40">Alerte sonore — 5 DH</p>
+      </div>
+      <div class="component-card text-center">
+        <div class="w-14 h-14 mx-auto mb-3 rounded-2xl bg-green-500/15 flex items-center justify-center">
+          <i data-lucide="battery-charging" class="w-7 h-7 text-green-400"></i>
+        </div>
+        <h4 class="font-semibold mb-1">Batterie 9V</h4>
+        <p class="text-xs text-white/40">Alimentation — 15 DH</p>
+      </div>
+      <div class="component-card text-center">
+        <div class="w-14 h-14 mx-auto mb-3 rounded-2xl bg-orange-500/15 flex items-center justify-center">
+          <i data-lucide="cable" class="w-7 h-7 text-orange-400"></i>
+        </div>
+        <h4 class="font-semibold mb-1">Câbles & PCB</h4>
+        <p class="text-xs text-white/40">Connexions — 10 DH</p>
+      </div>
+    </div>
+
+    <div class="stagger-4 mt-8 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-5 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <i data-lucide="badge-euro" class="w-6 h-6 text-emerald-400"></i>
+        <span class="font-medium">Coût total estimé</span>
+      </div>
+      <span class="text-2xl font-bold text-emerald-400">≈ 90 DH</span>
+    </div>
+  </div>
+  <div class="slide-number">05</div>
+</div>
+
+<!-- ======================== SLIDE 6 : VALEUR ÉCONOMIQUE ======================== -->
+<div class="slide" id="slide-5">
+  <div class="glow-orb w-96 h-96 bg-emerald-500/10 -top-10 right-0"></div>
+  <div class="max-w-4xl w-full">
+    <div class="stagger-1 tag bg-emerald-500/15 text-emerald-400 border border-emerald-500/20 mb-6">
+      <i data-lucide="trending-up" class="w-4 h-4 inline mr-1"></i> Valeur Économique
+    </div>
+
+    <h2 class="stagger-2 text-4xl md:text-5xl font-semibold tracking-tight mb-10">
+      Un produit <span class="text-emerald-400">viable</span>
+    </h2>
+
+    <div class="stagger-3 grid md:grid-cols-3 gap-6 mb-8">
+      <div class="component-card">
+        <div class="w-12 h-12 rounded-xl bg-emerald-500/15 flex items-center justify-center mb-4">
+          <i data-lucide="coins" class="w-6 h-6 text-emerald-400"></i>
+        </div>
+        <h4 class="font-semibold mb-2">Coût faible</h4>
+        <p class="text-sm text-white/50">≈ 90 DH (≈ 9€) de matériaux. Bien moins cher que les cannes électroniques existantes (200€+).</p>
+        <div class="mt-4 flex items-center gap-2">
+          <div class="h-2 flex-1 rounded-full bg-white/10 overflow-hidden">
+            <div class="h-full w-[90%] rounded-full bg-gradient-to-r from-emerald-500 to-emerald-400"></div>
+          </div>
+          <span class="text-xs text-emerald-400 font-medium">90%</span>
+        </div>
+        <p class="text-[10px] text-white/30 mt-1">Économie vs cannes intelligentes du marché</p>
+      </div>
+
+      <div class="component-card">
+        <div class="w-12 h-12 rounded-xl bg-blue-500/15 flex items-center justify-center mb-4">
+          <i data-lucide="store" class="w-6 h-6 text-blue-400"></i>
+        </div>
+        <h4 class="font-semibold mb-2">Marché potentiel</h4>
+        <p class="text-sm text-white/50">Des millions de personnes aveugles dans le monde ont besoin de solutions accessibles et bon marché.</p>
+        <div class="mt-4 text-3xl font-bold text-blue-400">2,2<span class="text-lg">Mrd</span></div>
+        <p class="text-[10px] text-white/30">Personnes avec déficience visuelle (OMS)</p>
+      </div>
+
+      <div class="component-card">
+        <div class="w-12 h-12 rounded-xl bg-violet-500/15 flex items-center justify-center mb-4">
+          <i data-lucide="repeat" class="w-6 h-6 text-violet-400"></i>
+        </div>
+        <h4 class="font-semibold mb-2">Production facile</h4>
+        <p class="text-sm text-white/50">Composants disponibles partout, assemblage simple, fabrication possible à petite échelle.</p>
+        <div class="mt-4 flex gap-1">
+          <div class="w-2 h-8 rounded-full bg-violet-400/30"></div>
+          <div class="w-2 h-12 rounded-full bg-violet-400/50"></div>
+          <div class="w-2 h-16 rounded-full bg-violet-400/70"></div>
+          <div class="w-2 h-20 rounded-full bg-violet-400"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="stagger-4 bg-white/5 border border-white/10 rounded-2xl p-5">
+      <h4 class="font-semibold mb-2 flex items-center gap-2"><i data-lucide="calculator" class="w-5 h-5 text-emerald-400"></i> Modèle économique</h4>
+      <p class="text-sm text-white/50">Prix de vente estimé : <strong class="text-white">150–200 DH</strong> → Marge bénéficiaire : <strong class="text-emerald-400">60–110 DH par unité</strong>. Possibilité de subventions et associations partenaires.</p>
+    </div>
+  </div>
+  <div class="slide-number">06</div>
+</div>
+
+<!-- ======================== SLIDE 7 : IMPACT SOCIAL ======================== -->
+<div class="slide" id="slide-6">
+  <div class="glow-orb w-80 h-80 bg-rose-500/10 top-20 left-0"></div>
+  <div class="max-w-4xl w-full">
+    <div class="stagger-1 tag bg-rose-500/15 text-rose-400 border border-rose-500/20 mb-6">
+      <i data-lucide="heart-handshake" class="w-4 h-4 inline mr-1"></i> Impact Social
+    </div>
+
+    <h2 class="stagger-2 text-4xl md:text-5xl font-semibold tracking-tight mb-10">
+      Aider les <span class="text-rose-400">personnes</span> dans le besoin
+    </h2>
+
+    <div class="stagger-3 grid md:grid-cols-2 gap-6 mb-8">
+      <div class="relative rounded-2xl overflow-hidden">
+        <img src="https://picsum.photos/seed/blind-help-community/500/300.jpg" class="w-full h-48 object-cover" alt="Aide aux personnes aveugles"/>
+        <div class="absolute inset-0 bg-gradient-to-t from-slate-950/90 to-transparent"></div>
+        <div class="absolute bottom-4 left-4 right-4">
+          <p class="text-sm font-medium">Autonomie retrouvée</p>
+          <p class="text-xs text-white/50">Se déplacer seul en toute sécurité</p>
+        </div>
+      </div>
+
+      <div class="space-y-4">
+        <div class="flex items-start gap-4">
+          <div class="w-10 h-10 rounded-xl bg-rose-500/15 flex items-center justify-center flex-shrink-0 mt-1">
+            <i data-lucide="accessibility" class="w-5 h-5 text-rose-400"></i>
+          </div>
+          <div>
+            <h4 class="font-medium text-sm mb-1">Inclusion sociale</h4>
+            <p class="text-xs text-white/40">Permet aux personnes aveugles d'être plus indépendantes dans leur vie quotidienne.</p>
+          </div>
+        </div>
+        <div class="flex items-start gap-4">
+          <div class="w-10 h-10 rounded-xl bg-emerald-500/15 flex items-center justify-center flex-shrink-0 mt-1">
+            <i data-lucide="hand-coins" class="w-5 h-5 text-emerald-400"></i>
+          </div>
+          <div>
+            <h4 class="font-medium text-sm mb-1">Accessibilité financière</h4>
+            <p class="text-xs text-white/40">Prix très bas pour que tout le monde puisse en bénéficier, même les familles modestes.</p>
+          </div>
+        </div>
+        <div class="flex items-start gap-4">
+          <div class="w-10 h-10 rounded-xl bg-sky-500/15 flex items-center justify-center flex-shrink-0 mt-1">
+            <i data-lucide="smile" class="w-5 h-5 text-sky-400"></i>
+          </div>
+          <div>
+            <h4 class="font-medium text-sm mb-1">Confiance en soi</h4>
+            <p class="text-xs text-white/40">Moins d'accidents = plus de confiance pour sortir et interagir avec le monde.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="stagger-4 bg-rose-500/10 border border-rose-500/20 rounded-2xl p-5 text-center">
+      <p class="text-lg font-medium text-rose-300">"La technologie doit être au service de tous, surtout de ceux qui en ont le plus besoin."</p>
+    </div>
+  </div>
+  <div class="slide-number">07</div>
+</div>
+
+<!-- ======================== SLIDE 8 : SCHÉMA ======================== -->
+<div class="slide" id="slide-7">
+  <div class="glow-orb w-72 h-72 bg-cyan-500/10 -bottom-20 right-20"></div>
+  <div class="max-w-4xl w-full">
+    <div class="stagger-1 tag bg-cyan-500/15 text-cyan-400 border border-cyan-500/20 mb-6">
+      <i data-lucide="git-branch" class="w-4 h-4 inline mr-1"></i> Schéma du Système
+    </div>
+
+    <h2 class="stagger-2 text-4xl md:text-5xl font-semibold tracking-tight mb-10">
+      Architecture <span class="text-cyan-400">du circuit</span>
+    </h2>
+
+    <div class="stagger-3 bg-white/[0.03] border border-white/10 rounded-3xl p-8 md:p-10">
+      <!-- Diagram -->
+      <div class="flex flex-col items-center gap-0">
+        <!-- Power -->
+        <div class="diagram-box bg-green-500/10 border-green-500/20 text-green-300 w-48">
+          <i data-lucide="battery-charging" class="w-5 h-5 inline mr-1"></i> Batterie 9V
+        </div>
+        <div class="text-emerald-400 text-2xl my-1">↓</div>
+
+        <!-- Arduino -->
+        <div class="diagram-box bg-sky-500/10 border-sky-500/20 text-sky-300 w-56">
+          <i data-lucide="cpu" class="w-5 h-5 inline mr-1"></i> Arduino Nano
+        </div>
+        <div class="text-emerald-400 text-2xl my-1">↑ ↓</div>
+
+        <!-- Row: Sensor + Outputs -->
+        <div class="flex flex-col md:flex-row items-center gap-4 md:gap-8">
+          <!-- Input -->
+          <div class="flex flex-col items-center">
+            <div class="diagram-box bg-cyan-500/10 border-cyan-500/20 text-cyan-300 w-44">
+              <i data-lucide="radar" class="w-5 h-5 inline mr-1"></i> HC-SR04
+            </div>
+            <span class="text-[10px] text-white/30 mt-1">Entrée (signal)</span>
+          </div>
+
+          <div class="text-white/20 text-sm font-medium hidden md:block">← →</div>
+
+          <!-- Outputs -->
+          <div class="flex flex-col items-center gap-3">
+            <div class="diagram-box bg-amber-500/10 border-amber-500/20 text-amber-300 w-44">
+              <i data-lucide="vibrate" class="w-5 h-5 inline mr-1"></i> Moteur vibrant
+            </div>
+            <div class="diagram-box bg-rose-500/10 border-rose-500/20 text-rose-300 w-44">
+              <i data-lucide="volume-2" class="w-5 h-5 inline mr-1"></i> Buzzer
+            </div>
+            <span class="text-[10px] text-white/30">Sorties (alertes)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Legend -->
+      <div class="mt-8 pt-6 border-t border-white/10 flex flex-wrap justify-center gap-6 text-xs text-white/40">
+        <span class="flex items-center gap-2"><span class="w-3 h-3 rounded bg-cyan-500/40"></span> Détection</span>
+        <span class="flex items-center gap-2"><span class="w-3 h-3 rounded bg-sky-500/40"></span> Traitement</span>
+        <span class="flex items-center gap-2"><span class="w-3 h-3 rounded bg-amber-500/40"></span> Alerte tactile</span>
+        <span class="flex items-center gap-2"><span class="w-3 h-3 rounded bg-rose-500/40"></span> Alerte sonore</span>
+        <span class="flex items-center gap-2"><span class="w-3 h-3 rounded bg-green-500/40"></span> Alimentation</span>
+      </div>
+    </div>
+  </div>
+  <div class="slide-number">08</div>
+</div>
+
+<!-- ======================== SLIDE 9 : AVANTAGES / INCONVÉNIENTS ======================== -->
+<div class="slide" id="slide-8">
+  <div class="glow-orb w-80 h-80 bg-emerald-500/10 top-10 left-0"></div>
+  <div class="glow-orb w-60 h-60 bg-red-500/10 bottom-10 right-0"></div>
+  <div class="max-w-4xl w-full">
+    <div class="stagger-1 tag bg-white/10 text-white/60 border border-white/10 mb-6">
+      <i data-lucide="scale" class="w-4 h-4 inline mr-1"></i> Avantages & Inconvénients
+    </div>
+
+    <h2 class="stagger-2 text-4xl md:text-5xl font-semibold tracking-tight mb-10">
+      Le pour et le <span class="text-white/40">contre</span>
+    </h2>
+
+    <div class="stagger-3 grid md:grid-cols-2 gap-6">
+      <!-- Avantages -->
+      <div class="space-y-3">
+        <div class="flex items-center gap-2 mb-4">
+          <div class="w-8 h-8 rounded-lg bg-emerald-500/15 flex items-center justify-center">
+            <i data-lucide="thumbs-up" class="w-4 h-4 text-emerald-400"></i>
+          </div>
+          <h3 class="font-semibold text-emerald-400">Avantages</h3>
+        </div>
+
+        <div class="flex items-start gap-3 p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/10">
+          <i data-lucide="check-circle" class="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5"></i>
+          <p class="text-sm text-white/70">Prix très bas (≈ 90 DH), accessible à tous</p>
+        </div>
+        <div class="flex items-start gap-3 p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/10">
+          <i data-lucide="check-circle" class="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5"></i>
+          <p class="text-sm text-white/70">Double alerte : vibration + son</p>
+        </div>
+        <div class="flex items-start gap-3 p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/10">
+          <i data-lucide="check-circle" class="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5"></i>
+          <p class="text-sm text-white/70">Léger et facile à utiliser</p>
+        </div>
+        <div class="flex items-start gap-3 p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/10">
+          <i data-lucide="check-circle" class="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5"></i>
+          <p class="text-sm text-white/70">Détecte les obstacles en hauteur</p>
+        </div>
+        <div class="flex items-start gap-3 p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/10">
+          <i data-lucide="check-circle" class="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5"></i>
+          <p class="text-sm text-white/70">Composants faciles à trouver et remplacer</p>
+        </div>
+      </div>
+
+      <!-- Inconvénients -->
+      <div class="space-y-3">
+        <div class="flex items-center gap-2 mb-4">
+          <div class="w-8 h-8 rounded-lg bg-red-500/15 flex items-center justify-center">
+            <i data-lucide="thumbs-down" class="w-4 h-4 text-red-400"></i>
+          </div>
+          <h3 class="font-semibold text-red-400">Inconvénients</h3>
+        </div>
+
+        <div class="flex items-start gap-3 p-3 rounded-xl bg-red-500/5 border border-red-500/10">
+          <i data-lucide="x-circle" class="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5"></i>
+          <p class="text-sm text-white/70">Portée limitée du capteur (~4m max)</p>
+        </div>
+        <div class="flex items-start gap-3 p-3 rounded-xl bg-red-500/5 border border-red-500/10">
+          <i data-lucide="x-circle" class="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5"></i>
+          <p class="text-sm text-white/70">Batterie à recharger régulièrement</p>
+        </div>
+        <div class="flex items-start gap-3 p-3 rounded-xl bg-red-500/5 border border-red-500/10">
+          <i data-lucide="x-circle" class="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5"></i>
+          <p class="text-sm text-white/70">Ne détecte pas les obstacles très fins (fils)</p>
+        </div>
+        <div class="flex items-start gap-3 p-3 rounded-xl bg-red-500/5 border border-red-500/10">
+          <i data-lucide="x-circle" class="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5"></i>
+          <p class="text-sm text-white/70">Pas de GPS ou connexion smartphone (version de base)</p>
+        </div>
+        <div class="flex items-start gap-3 p-3 rounded-xl bg-red-500/5 border border-red-500/10">
+          <i data-lucide="x-circle" class="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5"></i>
+          <p class="text-sm text-white/70">Peut gêner dans les endroits très bruyants</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-number">09</div>
+</div>
+
+<!-- ======================== SLIDE 10 : CONCLUSION ======================== -->
+<div class="slide" id="slide-9">
+  <div class="glow-orb w-96 h-96 bg-emerald-500/15 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"></div>
+  <div class="max-w-3xl w-full text-center">
+    <div class="stagger-1 tag bg-emerald-500/15 text-emerald-400 border border-emerald-500/20 mb-6">
+      <i data-lucide="flag" class="w-4 h-4 inline mr-1"></i> Conclusion
+    </div>
+
+    <h2 class="stagger-2 text-4xl md:text-5xl font-semibold tracking-tight mb-8">
+      Un projet <span class="text-emerald-400">utile</span> et <span class="text-emerald-400">réalisable</span>
+    </h2>
+
+    <div class="stagger-3 space-y-5 text-white/60 text-lg leading-relaxed mb-10">
+      <p>Le <strong class="text-white">Bâton Wahchyy</strong> montre qu'il est possible de créer un produit <strong class="text-emerald-400">technologique</strong>, <strong class="text-emerald-400">utile</strong> et <strong class="text-emerald-400">peu coûteux</strong> pour aider les personnes aveugles.</p>
+      <p>Ce projet combine <strong class="text-white">électronique</strong>, <strong class="text-white">économie</strong> et <strong class="text-white">solidarité</strong>. Il prouve que l'innovation n'est pas réservée aux grandes entreprises.</p>
+    </div>
+
+    <div class="stagger-4 grid grid-cols-3 gap-4 mb-10">
+      <div class="p-4 rounded-2xl bg-white/5 border border-white/10">
+        <div class="text-3xl font-bold text-emerald-400 mb-1">90</div>
+        <div class="text-xs text-white/40">DH de coût</div>
+      </div>
+      <div class="p-4 rounded-2xl bg-white/5 border border-white/10">
+        <div class="text-3xl font-bold text-emerald-400 mb-1">4m</div>
+        <div class="text-xs text-white/40">Portée détection</div>
+      </div>
+      <div class="p-4 rounded-2xl bg-white/5 border border-white/10">
+        <div class="text-3xl font-bold text-emerald-400 mb-1">2</div>
+        <div class="text-xs text-white/40">Types d'alerte</div>
+      </div>
+    </div>
+
+    <div class="stagger-5">
+      <p class="text-2xl font-semibold mb-2">Merci de votre attention !</p>
+      <p class="text-white/30 text-sm">Houssine · Anjed · Zakaria</p>
+      <div class="mt-6 flex justify-center gap-3">
+        <div class="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center">
+          <i data-lucide="eye" class="w-5 h-5 text-emerald-400"></i>
+        </div>
+        <div class="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center">
+          <i data-lucide="heart" class="w-5 h-5 text-emerald-400"></i>
+        </div>
+        <div class="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center">
+          <i data-lucide="lightbulb" class="w-5 h-5 text-emerald-400"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-number">10</div>
+</div>
+
+
+<script>
+  lucide.createIcons();
+
+  const totalSlides = 10;
+  let current = 0;
+  let isAnimating = false;
+
+  // Build dots
+  const dotsContainer = document.getElementById('dots');
+
+  for (let i = 0; i < totalSlides; i++) {
+    const dot = document.createElement('div');
+    dot.className = 'w-2 h-2 rounded-full transition-all duration-300 cursor-pointer';
+    dot.style.background = i === 0 ? '#10b981' : 'rgba(255,255,255,0.2)';
+    dot.addEventListener('click', () => goToSlide(i));
+    dotsContainer.appendChild(dot);
+  }
+
+  function updateUI() {
+    document.getElementById('progressBar').style.width =
+      ((current + 1) / totalSlides * 100) + '%';
+
+    document.getElementById('slideCounter').textContent =
+      String(current + 1).padStart(2, '0') + ' / ' + totalSlides;
+
+    dotsContainer.querySelectorAll('div').forEach((d, i) => {
+      d.style.background =
+        i === current ? '#10b981' : 'rgba(255,255,255,0.2)';
+      d.style.transform =
+        i === current ? 'scale(1.3)' : 'scale(1)';
+    });
+  }
+
+  function goToSlide(index) {
+    if (isAnimating || index === current) return;
+
+    isAnimating = true;
+
+    const slides = document.querySelectorAll('.slide');
+
+    slides.forEach(slide => {
+      slide.classList.remove('active');
+      slide.classList.remove('exit-left');
+    });
+
+    slides[current].classList.remove('active');
+
+    current = index;
+
+    slides[current].classList.add('active');
+
+    updateUI();
+
+    setTimeout(() => {
+      isAnimating = false;
+    }, 500);
+  }
+
+  function changeSlide(dir) {
+    const next = current + dir;
+
+    if (next < 0 || next >= totalSlides) return;
+
+    goToSlide(next);
+  }
+
+  // Keyboard
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === ' ') {
+      e.preventDefault();
+      changeSlide(1);
+    }
+
+    if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      changeSlide(-1);
+    }
+  });
+
+  // Touch swipe
+  let touchStartX = 0;
+
+  document.addEventListener('touchstart', (e) => {
+    touchStartX = e.changedTouches[0].screenX;
+  });
+
+  document.addEventListener('touchend', (e) => {
+    const diff = touchStartX - e.changedTouches[0].screenX;
+
+    if (Math.abs(diff) > 60) {
+      changeSlide(diff > 0 ? 1 : -1);
+    }
+  });
+
+  updateUI();
+</script>
+
+</body>
+</html>
