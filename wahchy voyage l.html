@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wahchyy Voyage — Djerba vers les Pays-Bas</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      fontFamily: {
+        playfair: ['Playfair Display', 'serif'],
+        inter: ['Inter', 'sans-serif'],
+      }
+    }
+  }
+}
+</script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;overflow:hidden;background:#0a0a0a}
+
+.slide{position:absolute;inset:0;opacity:0;transform:scale(1.02);transition:opacity .8s cubic-bezier(.4,0,.2,1),transform .8s cubic-bezier(.4,0,.2,1);pointer-events:none;z-index:0}
+.slide.active{opacity:1;transform:scale(1);pointer-events:all;z-index:10}
+
+.slide-bg{position:absolute;inset:0;background-size:cover;background-position:center;filter:brightness(.4);z-index:0;transition:transform 8s ease-out}
+.slide.active .slide-bg{transform:scale(1.05)}
+
+.slide-content{position:relative;z-index:2;min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:3rem 4rem}
+
+@keyframes fadeInUp{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeInLeft{from{opacity:0;transform:translateX(-50px)}to{opacity:1;transform:translateX(0)}}
+@keyframes fadeInRight{from{opacity:0;transform:translateX(50px)}to{opacity:1;transform:translateX(0)}}
+@keyframes scaleIn{from{opacity:0;transform:scale(.8)}to{opacity:1;transform:scale(1)}}
+@keyframes shimmer{0%{background-position:-200% center}100%{background-position:200% center}}
+@keyframes pulseGlow{0%,100%{box-shadow:0 0 20px rgba(249,115,22,.3)}50%{box-shadow:0 0 40px rgba(249,115,22,.6)}}
+
+.slide.active .anim-up{animation:fadeInUp .8s ease-out forwards}
+.slide.active .anim-left{animation:fadeInLeft .8s ease-out forwards}
+.slide.active .anim-right{animation:fadeInRight .8s ease-out forwards}
+.slide.active .anim-scale{animation:scaleIn .8s ease-out forwards}
+
+.delay-1{animation-delay:.2s!important;opacity:0}
+.delay-2{animation-delay:.4s!important;opacity:0}
+.delay-3{animation-delay:.6s!important;opacity:0}
+.delay-4{animation-delay:.8s!important;opacity:0}
+.delay-5{animation-delay:1s!important;opacity:0}
+.delay-6{animation-delay:1.2s!important;opacity:0}
+
+.golden-text{background:linear-gradient(135deg,#F97316,#FBBF24,#F97316);background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:shimmer 3s linear infinite}
+
+.glass-card{background:rgba(255,255,255,.08);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.12);border-radius:1.25rem;transition:all .3s ease}
+.glass-card:hover{background:rgba(255,255,255,.14);border-color:rgba(249,115,22,.3);transform:translateY(-4px)}
+
+.nav-dot{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,.3);border:none;cursor:pointer;transition:all .3s}
+.nav-dot.active{background:#F97316;width:30px;border-radius:5px;box-shadow:0 0 12px rgba(249,115,22,.5)}
+
+.nav-btn{width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,.1);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.2);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .3s;font-size:1.2rem}
+.nav-btn:hover{background:rgba(249,115,22,.3);border-color:#F97316;transform:scale(1.1)}
+
+.logo-text{font-family:'Playfair Display',serif;background:linear-gradient(135deg,#F97316,#FBBF24);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+
+.icon-box{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0}
+
+.progress-bar{position:fixed;top:0;left:0;height:3px;z-index:100;background:linear-gradient(90deg,#F97316,#FBBF24,#34D399);transition:width .5s ease}
+
+.price-tag{background:linear-gradient(135deg,#F97316,#EA580C);border-radius:1rem;padding:1.5rem 2.5rem;animation:pulseGlow 2s ease-in-out infinite}
+
+.photo-frame{border-radius:1.25rem;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.4);transition:transform .5s}
+.photo-frame:hover{transform:scale(1.03)}
+.photo-frame img{width:100%;height:100%;object-fit:cover;transition:transform .7s}
+.photo-frame:hover img{transform:scale(1.08)}
+
+.overlay-gradient{position:absolute;inset:0;z-index:1;background:linear-gradient(to top,rgba(0,0,0,.85) 0%,rgba(0,0,0,.3) 50%,rgba(0,0,0,.5) 100%)}
+
+.badge{display:inline-flex;align-items:center;gap:.4rem;padding:.35rem .9rem;border-radius:9999px;font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em}
+
+.kbd{display:inline-flex;align-items:center;justify-content:center;padding:2px 8px;border-radius:4px;font-size:.65rem;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.5)}
+</style>
+</head>
+<body>
+
+<!-- Progress Bar -->
+<div class="progress-bar" id="progressBar" style="width:8.33%"></div>
+
+<!-- Navigation -->
+<nav class="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4" style="background:rgba(0,0,0,.3);backdrop-filter:blur(12px);border-bottom:1px solid rgba(255,255,255,.05)">
+  <div class="flex items-center gap-3">
+    <div class="w-9 h-9 rounded-xl flex items-center justify-center" style="background:linear-gradient(135deg,#F97316,#EA580C)">
+      <iconify-icon icon="solar:airplane-bold" style="color:#fff;font-size:1.1rem"></iconify-icon>
+    </div>
+    <span class="logo-text text-xl font-bold tracking-tight">Wahchyy Voyage</span>
+  </div>
+  <div class="flex items-center gap-2" id="navDots"></div>
+  <div class="flex items-center gap-2 text-white/40 text-xs">
+    <span class="kbd">←</span><span class="kbd">→</span>
+    <span class="ml-1">Navigation</span>
+  </div>
+</nav>
+
+<!-- Bottom Controls -->
+<div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-4">
+  <button class="nav-btn" onclick="prevSlide()">
+    <iconify-icon icon="solar:arrow-left-linear"></iconify-icon>
+  </button>
+  <div class="text-white/60 text-sm font-medium min-w-[80px] text-center" id="slideCounter">1 / 12</div>
+  <button class="nav-btn" onclick="nextSlide()">
+    <iconify-icon icon="solar:arrow-right-linear"></iconify-icon>
+  </button>
+</div>
+
+<!-- ===================== SLIDE 1: COVER ===================== -->
+<div class="slide active" id="slide-0">
+  <div class="slide-bg" style="background-image:url('https://images.unsplash.com/photo-1534351590666-13e3e96b5017?w=1920&q=85&auto=format&fit=crop');background-color:#1a365d"></div>
+  <div class="overlay-gradient"></div>
+  <div class="slide-content items-center text-center" style="padding-top:6rem">
+    <div class="anim-scale delay-1 mb-6">
+      <div class="inline-flex items-center gap-3 px-5 py-2.5 rounded-full" style="background:rgba(249,115,22,.15);border:1px solid rgba(249,115,22,.3)">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center" style="background:linear-gradient(135deg,#F97316,#EA580C)">
+          <iconify-icon icon="solar:airplane-bold" style="color:#fff;font-size:1.3rem"></iconify-icon>
+        </div>
+        <span class="logo-text text-2xl font-bold">Wahchyy Voyage</span>
+      </div>
+    </div>
+    <div class="anim-up delay-2 mb-6">
+      <span class="badge" style="background:rgba(52,211,153,.15);color:#34D399;border:1px solid rgba(52,211,153,.3)">
+        <iconify-icon icon="solar:star-bold" style="font-size:.75rem"></iconify-icon>
+        Voyage Premium 2025
+      </span>
+    </div>
+    <h1 class="anim-up delay-2 font-playfair text-5xl md:text-7xl lg:text-8xl font-bold text-white leading-none tracking-tight mb-4" style="text-shadow:0 4px 30px rgba(0,0,0,.4)">
+      Djerba <span class="golden-text">→</span> Pays-Bas
+    </h1>
+    <p class="anim-up delay-3 text-xl md:text-2xl text-white/70 font-light max-w-2xl mx-auto mb-8">
+      Un voyage inoubliable au cœur des canaux, moulins et tulipes
+    </p>
+    <div class="anim-up delay-4 flex flex-wrap items-center justify-center gap-4 mb-10">
+      <div class="glass-card px-5 py-3 flex items-center gap-3">
+        <div class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold" style="background:linear-gradient(135deg,#2563EB,#1E3A8A);color:#fff">H</div>
+        <span class="text-white/80 text-sm font-medium">Houssine</span>
+      </div>
+      <div class="glass-card px-5 py-3 flex items-center gap-3">
+        <div class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold" style="background:linear-gradient(135deg,#059669,#047857);color:#fff">A</div>
+        <span class="text-white/80 text-sm font-medium">Anjed</span>
+      </div>
+      <div class="glass-card px-5 py-3 flex items-center gap-3">
+        <div class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold" style="background:linear-gradient(135deg,#F97316,#EA580C);color:#fff">Z</div>
+        <span class="text-white/80 text-sm font-medium">Zakaria</span>
+      </div>
+      <div class="glass-card px-5 py-3 flex items-center gap-3">
+        <div class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold" style="background:linear-gradient(135deg,#7C3AED,#6D28D9);color:#fff">F</div>
+        <span class="text-white/80 text-sm font-medium">Fares</span>
+      </div>
+    </div>
+    <div class="anim-up delay-5">
+      <button onclick="nextSlide()" class="px-8 py-4 rounded-full text-white font-semibold text-base flex items-center gap-2 mx-auto" style="background:linear-gradient(135deg,#F97316,#EA580C);box-shadow:0 10px 30px rgba(249,115,22,.4);transition:all .3s">
+        Découvrir le voyage
+        <iconify-icon icon="solar:arrow-right-linear" style="font-size:1.1rem"></iconify-icon>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== SLIDE 2: PAYS-BAS INTRO ===================== -->
+<div class="slide" id="slide-1">
+  <div class="slide-bg" style="background-image:url('https://images.unsplash.com/photo-1490750967868-88aa4f44baee?w=1920&q=85&auto=format&fit=crop');background-color:#064e3b"></div>
+  <div class="overlay-gradient"></div>
+  <div class="slide-content" style="padding-top:5rem">
+    <div class="max-w-6xl mx-auto w-full">
+      <div class="anim-up delay-1 mb-3">
+        <span class="badge" style="background:rgba(37,99,235,.15);color:#60A5FA;border:1px solid rgba(37,99,235,.3)">
+          <iconify-icon icon="solar:compass-big-bold" style="font-size:.75rem"></iconify-icon>
+          Destination
+        </span>
+      </div>
+      <h2 class="anim-up delay-1 font-playfair text-4xl md:text-6xl font-bold text-white mb-2">Les Pays-Bas</h2>
+      <p class="anim-up delay-2 text-lg text-white/50 mb-10 max-w-xl">Un pays où tradition et modernité se rencontrent dans une harmonie parfaite</p>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div class="anim-up delay-2 glass-card p-6">
+          <div class="icon-box mb-4" style="background:rgba(37,99,235,.15);color:#60A5FA"><iconify-icon icon="solar:city-bold-duotone"></iconify-icon></div>
+          <p class="text-white/40 text-xs uppercase tracking-widest mb-1">Capitale</p>
+          <p class="text-white text-xl font-semibold">Amsterdam</p>
+        </div>
+        <div class="anim-up delay-3 glass-card p-6">
+          <div class="icon-box mb-4" style="background:rgba(249,115,22,.15);color:#FB923C"><iconify-icon icon="solar:dollar-minimalistic-bold-duotone"></iconify-icon></div>
+          <p class="text-white/40 text-xs uppercase tracking-widest mb-1">Monnaie</p>
+          <p class="text-white text-xl font-semibold">Euro (€)</p>
+        </div>
+        <div class="anim-up delay-4 glass-card p-6">
+          <div class="icon-box mb-4" style="background:rgba(52,211,153,.15);color:#34D399"><iconify-icon icon="solar:chat-round-dots-bold-duotone"></iconify-icon></div>
+          <p class="text-white/40 text-xs uppercase tracking-widest mb-1">Langue</p>
+          <p class="text-white text-xl font-semibold">Néerlandais</p>
+        </div>
+        <div class="anim-up delay-5 glass-card p-6">
+          <div class="icon-box mb-4" style="background:rgba(251,191,36,.15);color:#FBBF24"><iconify-icon icon="solar:palette-bold-duotone"></iconify-icon></div>
+          <p class="text-white/40 text-xs uppercase tracking-widest mb-1">Culture</p>
+          <p class="text-white text-xl font-semibold">Art & Liberté</p>
+        </div>
+      </div>
+      <div class="anim-up delay-6 mt-8 flex gap-4 overflow-hidden rounded-2xl" style="height:160px">
+        <div class="flex-1 rounded-xl overflow-hidden"><img src="https://images.unsplash.com/photo-1534351590666-13e3e96b5017?w=600&q=80&auto=format&fit=crop" alt="Amsterdam" class="w-full h-full object-cover"></div>
+        <div class="flex-1 rounded-xl overflow-hidden"><img src="https://framerusercontent.com/images/3ORU7wXRS7oBBdmFtqVa4sXg1OY.jpeg?width=7008&height=4672" alt="Canaux" class="w-full h-full object-cover"></div>
+        <div class="flex-1 rounded-xl overflow-hidden hidden md:block"><img src="https://statik.tempo.co/data/2024/04/23/id_1296773/1296773_720.jpg" alt="Moulins" class="w-full h-full object-cover"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== SLIDE 3: DÉPART DJERBA ===================== -->
+<div class="slide" id="slide-2">
+  <div class="slide-bg" style="background-image:url('https://images.unsplash.com/photo-1436491865332-7a61a109db05?w=1920&q=85&auto=format&fit=crop');background-color:#1e3a5f"></div>
+  <div class="overlay-gradient"></div>
+  <div class="slide-content" style="padding-top:5rem">
+    <div class="max-w-6xl mx-auto w-full">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+        <div>
+          <div class="anim-left delay-1 mb-4">
+            <span class="badge" style="background:rgba(249,115,22,.15);color:#FB923C;border:1px solid rgba(249,115,22,.3)">
+              <iconify-icon icon="solar:airplane-takeoff-bold" style="font-size:.75rem"></iconify-icon> Départ
+            </span>
+          </div>
+          <h2 class="anim-left delay-1 font-playfair text-4xl md:text-5xl font-bold text-white mb-6">Départ depuis <span class="golden-text">Djerba</span></h2>
+          <p class="anim-left delay-2 text-white/60 text-lg mb-8 leading-relaxed">Votre aventure commence à l'aéroport de Djerba-Zarzis. Nous assurons un voyage confortable et sécurisé vers les Pays-Bas.</p>
+          <div class="space-y-4">
+            <div class="anim-left delay-3 glass-card p-4 flex items-center gap-4">
+              <div class="icon-box" style="background:rgba(37,99,235,.15);color:#60A5FA"><iconify-icon icon="solar:airport-bold-duotone"></iconify-icon></div>
+              <div><p class="text-white font-semibold">Aéroport de Djerba-Zarzis</p><p class="text-white/40 text-sm">Terminal international</p></div>
+            </div>
+            <div class="anim-left delay-4 glass-card p-4 flex items-center gap-4">
+              <div class="icon-box" style="background:rgba(52,211,153,.15);color:#34D399"><iconify-icon icon="solar:shield-check-bold-duotone"></iconify-icon></div>
+              <div><p class="text-white font-semibold">Confort & Sécurité</p><p class="text-white/40 text-sm">Compagnie certifiée, service premium</p></div>
+            </div>
+            <div class="anim-left delay-5 glass-card p-4 flex items-center gap-4">
+              <div class="icon-box" style="background:rgba(249,115,22,.15);color:#FB923C"><iconify-icon icon="solar:hand-shake-bold-duotone"></iconify-icon></div>
+              <div><p class="text-white font-semibold">Accueil personnalisé</p><p class="text-white/40 text-sm">Assistance dès l'arrivée à l'aéroport</p></div>
+            </div>
+          </div>
+        </div>
+        <div class="anim-right delay-3">
+          <div class="photo-frame" style="height:480px">
+            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDTRQC7F9pARmFiuKKOvHbtsJp5ApDWCs2Mw&s" alt="Plage de Djerba">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== SLIDE 4: JOUR 1 ===================== -->
+<div class="slide" id="slide-3">
+  <div class="slide-bg" style="background-image:url('https://images.unsplash.com/photo-1583037189850-1921ae7c6c22?w=1920&q=85&auto=format&fit=crop');background-color:#1a365d"></div>
+  <div class="overlay-gradient"></div>
+  <div class="slide-content" style="padding-top:5rem">
+    <div class="max-w-6xl mx-auto w-full">
+      <div class="anim-up delay-1 mb-3">
+        <span class="badge" style="background:rgba(249,115,22,.15);color:#FB923C;border:1px solid rgba(249,115,22,.3)">
+          <iconify-icon icon="solar:calendar-bold" style="font-size:.75rem"></iconify-icon> Jour 1
+        </span>
+      </div>
+      <h2 class="anim-up delay-1 font-playfair text-4xl md:text-5xl font-bold text-white mb-2">Arrivée à <span class="golden-text">Amsterdam</span></h2>
+      <p class="anim-up delay-2 text-white/50 text-lg mb-10">Première immersion dans la magie néerlandaise</p>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="anim-up delay-2 glass-card p-6 relative overflow-hidden">
+          <div class="absolute top-0 left-0 w-full h-1" style="background:linear-gradient(90deg,#F97316,#FBBF24)"></div>
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-10 h-10 rounded-full flex items-center justify-center text-lg font-bold" style="background:linear-gradient(135deg,#F97316,#EA580C);color:#fff">1</div>
+            <p class="text-white/40 text-sm font-medium">Matin</p>
+          </div>
+          <div class="w-full h-40 rounded-xl overflow-hidden mb-4">
+            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSYegXrxO38As2EUOjs2mtqTFOAdeja97ZJOA&s" alt="Vol" class="w-full h-full object-cover">
+          </div>
+          <h3 class="text-white text-lg font-semibold mb-2">Arrivée & Accueil</h3>
+          <p class="text-white/50 text-sm">Accueil à l'aéroport de Schiphol et transfert privé vers l'hôtel</p>
+        </div>
+        <div class="anim-up delay-3 glass-card p-6 relative overflow-hidden">
+          <div class="absolute top-0 left-0 w-full h-1" style="background:linear-gradient(90deg,#2563EB,#60A5FA)"></div>
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-10 h-10 rounded-full flex items-center justify-center text-lg font-bold" style="background:linear-gradient(135deg,#2563EB,#1E3A8A);color:#fff">2</div>
+            <p class="text-white/40 text-sm font-medium">Après-midi</p>
+          </div>
+          <div class="w-full h-40 rounded-xl overflow-hidden mb-4">
+            <img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?w=500&q=80&auto=format&fit=crop" alt="Hôtel" class="w-full h-full object-cover">
+          </div>
+          <h3 class="text-white text-lg font-semibold mb-2">Installation Hôtel</h3>
+          <p class="text-white/50 text-sm">Installation dans un hôtel moderne et confortable au cœur de la ville</p>
+        </div>
+        <div class="anim-up delay-4 glass-card p-6 relative overflow-hidden">
+          <div class="absolute top-0 left-0 w-full h-1" style="background:linear-gradient(90deg,#059669,#34D399)"></div>
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-10 h-10 rounded-full flex items-center justify-center text-lg font-bold" style="background:linear-gradient(135deg,#059669,#047857);color:#fff">3</div>
+            <p class="text-white/40 text-sm font-medium">Soir</p>
+          </div>
+          <div class="w-full h-40 rounded-xl overflow-hidden mb-4">
+            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQBB6PvrGMZ1rEIePw6Ot8XkdrmCyriCZ5ySQ&s" alt="Canaux" class="w-full h-full object-cover">
+          </div>
+          <h3 class="text-white text-lg font-semibold mb-2">Promenade Nocturne</h3>
+          <p class="text-white/50 text-sm">Balade enchantée le long des canaux illuminés d'Amsterdam</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== SLIDE 5: JOUR 2 ===================== -->
+<div class="slide" id="slide-4">
+  <div class="slide-bg" style="background-image:url('https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=1920&q=85&auto=format&fit=crop');background-color:#0f172a"></div>
+  <div class="overlay-gradient"></div>
+  <div class="slide-content" style="padding-top:5rem">
+    <div class="max-w-6xl mx-auto w-full">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+        <div class="anim-left delay-1 relative" style="height:500px">
+          <div class="photo-frame absolute top-0 left-0 w-[55%] h-[55%]" style="z-index:2">
+            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRVhKLX43KD35K3Z8DolpnCxkX2Gs5ApVQyZg&s" alt="Croisière canaux">
+          </div>
+          <div class="photo-frame absolute bottom-0 right-0 w-[55%] h-[55%]" style="z-index:2">
+            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSI7KpgRYJpISC8iJqP56xRVp8m2BWXwrNddA&s" alt="Rues d'Amsterdam">
+          </div>
+          <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 rounded-2xl flex items-center justify-center" style="background:linear-gradient(135deg,#F97316,#EA580C);z-index:3;box-shadow:0 10px 30px rgba(249,115,22,.4)">
+            <span class="text-white font-bold text-xl">J2</span>
+          </div>
+        </div>
+        <div>
+          <div class="anim-right delay-1 mb-4">
+            <span class="badge" style="background:rgba(37,99,235,.15);color:#60A5FA;border:1px solid rgba(37,99,235,.3)">
+              <iconify-icon icon="solar:calendar-bold" style="font-size:.75rem"></iconify-icon> Jour 2
+            </span>
+          </div>
+          <h2 class="anim-right delay-1 font-playfair text-4xl md:text-5xl font-bold text-white mb-6">Découverte <span class="golden-text">d'Amsterdam</span></h2>
+          <div class="space-y-4">
+            <div class="anim-right delay-2 flex items-start gap-4">
+              <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style="background:rgba(37,99,235,.15);color:#60A5FA"><iconify-icon icon="solar:sailing-bold-duotone" style="font-size:1.2rem"></iconify-icon></div>
+              <div><p class="text-white font-semibold">Croisière dans les canaux</p><p class="text-white/40 text-sm">Naviguez à travers les canaux historiques d'Amsterdam</p></div>
+            </div>
+            <div class="anim-right delay-3 flex items-start gap-4">
+              <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style="background:rgba(249,115,22,.15);color:#FB923C"><iconify-icon icon="solar:bag-smile-bold-duotone" style="font-size:1.2rem"></iconify-icon></div>
+              <div><p class="text-white font-semibold">Shopping</p><p class="text-white/40 text-sm">Explorez les boutiques et marchés typiques</p></div>
+            </div>
+            <div class="anim-right delay-4 flex items-start gap-4">
+              <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style="background:rgba(52,211,153,.15);color:#34D399"><iconify-icon icon="solar:chef-hat-bold-duotone" style="font-size:1.2rem"></iconify-icon></div>
+              <div><p class="text-white font-semibold">Restaurants & Cafés célèbres</p><p class="text-white/40 text-sm">Savourez la gastronomie locale dans des lieux authentiques</p></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== SLIDE 6: JOUR 3 ===================== -->
+<div class="slide" id="slide-5">
+  <div class="slide-bg" style="background-image:url('https://images.unsplash.com/photo-1509803874385-db7c23652552?w=1920&q=85&auto=format&fit=crop');background-color:#064e3b"></div>
+  <div class="overlay-gradient"></div>
+  <div class="slide-content" style="padding-top:5rem">
+    <div class="max-w-6xl mx-auto w-full">
+      <div class="anim-up delay-1 mb-3">
+        <span class="badge" style="background:rgba(52,211,153,.15);color:#34D399;border:1px solid rgba(52,211,153,.3)">
+          <iconify-icon icon="solar:calendar-bold" style="font-size:.75rem"></iconify-icon> Jour 3
+        </span>
+      </div>
+      <h2 class="anim-up delay-1 font-playfair text-4xl md:text-5xl font-bold text-white mb-2">Moulins & <span class="golden-text">Villages</span></h2>
+      <p class="anim-up delay-2 text-white/50 text-lg mb-10">À la découverte du patrimoine traditionnel néerlandais</p>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="anim-up delay-2 glass-card overflow-hidden" style="min-height:380px">
+          <div class="w-full h-52 overflow-hidden">
+            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRjC3eFvtFwmXjrwb7suLChc3DUPD44LnnakQ&s" alt="Moulins" class="w-full h-full object-cover">
+          </div>
+          <div class="p-6">
+            <div class="flex items-center gap-3 mb-3">
+              <div class="icon-box" style="background:rgba(52,211,153,.15);color:#34D399;width:42px;height:42px;border-radius:12px"><iconify-icon icon="solar:wind-bold-duotone" style="font-size:1.2rem"></iconify-icon></div>
+              <h3 class="text-white text-xl font-semibold">Visite des Moulins</h3>
+            </div>
+            <p class="text-white/50 text-sm leading-relaxed">Découvrez les célèbres moulins à vent de Kinderdijk, classés au patrimoine mondial de l'UNESCO. Un paysage iconique et intemporel.</p>
+          </div>
+        </div>
+        <div class="space-y-6">
+          <div class="anim-up delay-3 glass-card overflow-hidden flex" style="min-height:175px">
+            <div class="w-2/5 overflow-hidden flex-shrink-0">
+              <img src="https://images.unsplash.com/photo-1583037189850-1921ae7c6c22?w=500&q=80&auto=format&fit=crop" alt="Village" class="w-full h-full object-cover">
+            </div>
+            <div class="p-5 flex flex-col justify-center">
+              <div class="flex items-center gap-2 mb-2"><iconify-icon icon="solar:home-smile-bold-duotone" style="color:#FB923C;font-size:1.2rem"></iconify-icon><h3 class="text-white font-semibold">Villages traditionnels</h3></div>
+              <p class="text-white/50 text-sm">Promenade dans les villages pittoresques de Zaanse Schans et Volendam</p>
+            </div>
+          </div>
+          <div class="anim-up delay-4 glass-card overflow-hidden flex" style="min-height:175px">
+            <div class="w-2/5 overflow-hidden flex-shrink-0">
+              <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSc1wqeIZhOUWBC6f0h-jBtK6xSFORITU1zuQ&s" alt="Tulipes" class="w-full h-full object-cover">
+            </div>
+            <div class="p-5 flex flex-col justify-center">
+              <div class="flex items-center gap-2 mb-2"><iconify-icon icon="solar:camera-bold-duotone" style="color:#60A5FA;font-size:1.2rem"></iconify-icon><h3 class="text-white font-semibold">Séance photo</h3></div>
+              <p class="text-white/50 text-sm">Capturez des moments magiques au milieu des champs de tulipes et paysages verdoyants</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== SLIDE 7: ACTIVITÉS ===================== -->
+<div class="slide" id="slide-6">
+  <div class="slide-bg" style="background-image:url('https://images.unsplash.com/photo-1483347756197-71ef80e95f73?w=1920&q=85&auto=format&fit=crop');background-color:#0c4a6e"></div>
+  <div class="overlay-gradient"></div>
+  <div class="slide-content" style="padding-top:5rem">
+    <div class="max-w-6xl mx-auto w-full">
+      <div class="anim-up delay-1 mb-3">
+        <span class="badge" style="background:rgba(251,191,36,.15);color:#FBBF24;border:1px solid rgba(251,191,36,.3)">
+          <iconify-icon icon="solar:stars-bold" style="font-size:.75rem"></iconify-icon> Expériences
+        </span>
+      </div>
+      <h2 class="anim-up delay-1 font-playfair text-4xl md:text-5xl font-bold text-white mb-2">Activités <span class="golden-text">Proposées</span></h2>
+      <p class="anim-up delay-2 text-white/50 text-lg mb-10">Des expériences uniques pour un voyage mémorable</p>
+      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+        <div class="anim-scale delay-2 glass-card p-5 text-center">
+          <div class="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-3" style="background:rgba(37,99,235,.15);color:#60A5FA;font-size:1.6rem"><iconify-icon icon="solar:bicycle-bold-duotone"></iconify-icon></div>
+          <p class="text-white font-semibold text-sm">Balade à vélo</p>
+          <p class="text-white/30 text-xs mt-1">Comme les locaux</p>
+        </div>
+        <div class="anim-scale delay-3 glass-card p-5 text-center">
+          <div class="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-3" style="background:rgba(249,115,22,.15);color:#FB923C;font-size:1.6rem"><iconify-icon icon="solar:sailing-bold-duotone"></iconify-icon></div>
+          <p class="text-white font-semibold text-sm">Croisière</p>
+          <p class="text-white/30 text-xs mt-1">Sur les canaux</p>
+        </div>
+        <div class="anim-scale delay-3 glass-card p-5 text-center">
+          <div class="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-3" style="background:rgba(52,211,153,.15);color:#34D399;font-size:1.6rem"><iconify-icon icon="solar:map-point-bold-duotone"></iconify-icon></div>
+          <p class="text-white font-semibold text-sm">Visites guidées</p>
+          <p class="text-white/30 text-xs mt-1">Guides experts</p>
+        </div>
+        <div class="anim-scale delay-4 glass-card p-5 text-center">
+          <div class="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-3" style="background:rgba(251,191,36,.15);color:#FBBF24;font-size:1.6rem"><iconify-icon icon="solar:cup-hot-bold-duotone"></iconify-icon></div>
+          <p class="text-white font-semibold text-sm">Cuisine locale</p>
+          <p class="text-white/30 text-xs mt-1">Saveurs authentiques</p>
+        </div>
+        <div class="anim-scale delay-5 glass-card p-5 text-center">
+          <div class="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-3" style="background:rgba(168,85,247,.15);color:#C084FC;font-size:1.6rem"><iconify-icon icon="solar:clock-circle-bold-duotone"></iconify-icon></div>
+          <p class="text-white font-semibold text-sm">Temps libre</p>
+          <p class="text-white/30 text-xs mt-1">À votre rythme</p>
+        </div>
+      </div>
+      <div class="anim-up delay-6 mt-8 rounded-2xl overflow-hidden" style="height:200px">
+        <img src="https://images.unsplash.com/photo-1534351590666-13e3e96b5017?w=1200&q=85&auto=format&fit=crop" alt="Amsterdam" class="w-full h-full object-cover">
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== SLIDE 8: HÉBERGEMENT ===================== -->
+<div class="slide" id="slide-7">
+  <div class="slide-bg" style="background-image:url('https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1920&q=85&auto=format&fit=crop');background-color:#1e3a5f"></div>
+  <div class="overlay-gradient"></div>
+  <div class="slide-content" style="padding-top:5rem">
+    <div class="max-w-6xl mx-auto w-full">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+        <div>
+          <div class="anim-left delay-1 mb-4">
+            <span class="badge" style="background:rgba(52,211,153,.15);color:#34D399;border:1px solid rgba(52,211,153,.3)">
+              <iconify-icon icon="solar:buildings-3-bold" style="font-size:.75rem"></iconify-icon> Hébergement
+            </span>
+          </div>
+          <h2 class="anim-left delay-1 font-playfair text-4xl md:text-5xl font-bold text-white mb-6">Confort <span class="golden-text">Premium</span></h2>
+          <p class="anim-left delay-2 text-white/60 text-lg mb-8">Un hébergement de qualité et un transport organisé pour un séjour sans souci</p>
+          <div class="space-y-5">
+            <div class="anim-left delay-3 glass-card p-5 flex items-center gap-5">
+              <div class="icon-box" style="background:linear-gradient(135deg,rgba(249,115,22,.2),rgba(251,191,36,.2));color:#FBBF24"><iconify-icon icon="solar:star-bold-duotone"></iconify-icon></div>
+              <div><p class="text-white font-semibold text-lg">Hôtel 4 étoiles</p><p class="text-white/40 text-sm">Chambres modernes avec vue panoramique</p></div>
+            </div>
+            <div class="anim-left delay-4 glass-card p-5 flex items-center gap-5">
+              <div class="icon-box" style="background:rgba(37,99,235,.15);color:#60A5FA"><iconify-icon icon="solar:bus-bold-duotone"></iconify-icon></div>
+              <div><p class="text-white font-semibold text-lg">Transport organisé</p><p class="text-white/40 text-sm">Transferts et excursions en bus privé</p></div>
+            </div>
+            <div class="anim-left delay-5 glass-card p-5 flex items-center gap-5">
+              <div class="icon-box" style="background:rgba(52,211,153,.15);color:#34D399"><iconify-icon icon="solar:shield-check-bold-duotone"></iconify-icon></div>
+              <div><p class="text-white font-semibold text-lg">Sécurité & Confort</p><p class="text-white/40 text-sm">Assurance voyage et assistance 24h/24</p></div>
+            </div>
+          </div>
+        </div>
+        <div class="anim-right delay-3 space-y-4">
+          <div class="photo-frame" style="height:280px">
+            <img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&q=85&auto=format&fit=crop" alt="Hôtel de luxe">
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div class="photo-frame" style="height:180px">
+              <img src="https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=500&q=80&auto=format&fit=crop" alt="Chambre">
+            </div>
+            <div class="photo-frame" style="height:180px">
+              <img src="https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=500&q=80&auto=format&fit=crop" alt="Piscine hôtel">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== SLIDE 9: BUDGET ===================== -->
+<div class="slide" id="slide-8">
+  <div class="slide-bg" style="background-image:url('https://images.unsplash.com/photo-1534351590666-13e3e96b5017?w=1920&q=85&auto=format&fit=crop');background-color:#1a365d"></div>
+  <div class="overlay-gradient"></div>
+  <div class="slide-content items-center text-center" style="padding-top:5rem">
+    <div class="max-w-4xl mx-auto w-full">
+      <div class="anim-up delay-1 mb-4">
+        <span class="badge" style="background:rgba(249,115,22,.15);color:#FB923C;border:1px solid rgba(249,115,22,.3)">
+          <iconify-icon icon="solar:tag-price-bold" style="font-size:.75rem"></iconify-icon> Tarifs
+        </span>
+      </div>
+      <h2 class="anim-up delay-1 font-playfair text-4xl md:text-5xl font-bold text-white mb-10">Budget & <span class="golden-text">Offres</span></h2>
+      <div class="anim-scale delay-2 glass-card p-8 md:p-12 max-w-2xl mx-auto relative overflow-hidden">
+        <div class="absolute top-0 left-0 w-full h-1.5" style="background:linear-gradient(90deg,#F97316,#FBBF24,#34D399)"></div>
+        <div class="absolute -top-20 -right-20 w-48 h-48 rounded-full" style="background:radial-gradient(circle,rgba(249,115,22,.1),transparent)"></div>
+        <p class="text-white/50 text-sm uppercase tracking-widest mb-3">Prix par personne</p>
+        <div class="price-tag inline-block mb-6">
+          <span class="text-5xl md:text-6xl font-bold text-white">6000</span>
+          <span class="text-2xl text-white/80 ml-1">TND</span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8 text-left">
+          <div class="flex items-center gap-3"><iconify-icon icon="solar:check-circle-bold" style="color:#34D399;font-size:1.3rem"></iconify-icon><span class="text-white/70 text-sm">Billet d'avion aller-retour</span></div>
+          <div class="flex items-center gap-3"><iconify-icon icon="solar:check-circle-bold" style="color:#34D399;font-size:1.3rem"></iconify-icon><span class="text-white/70 text-sm">Hébergement 4 étoiles</span></div>
+          <div class="flex items-center gap-3"><iconify-icon icon="solar:check-circle-bold" style="color:#34D399;font-size:1.3rem"></iconify-icon><span class="text-white/70 text-sm">Petit-déjeuner inclus</span></div>
+          <div class="flex items-center gap-3"><iconify-icon icon="solar:check-circle-bold" style="color:#34D399;font-size:1.3rem"></iconify-icon><span class="text-white/70 text-sm">Transferts aéroport</span></div>
+          <div class="flex items-center gap-3"><iconify-icon icon="solar:check-circle-bold" style="color:#34D399;font-size:1.3rem"></iconify-icon><span class="text-white/70 text-sm">Visites guidées</span></div>
+          <div class="flex items-center gap-3"><iconify-icon icon="solar:check-circle-bold" style="color:#34D399;font-size:1.3rem"></iconify-icon><span class="text-white/70 text-sm">Assurance voyage</span></div>
+        </div>
+        <div class="anim-up delay-4 mt-8 p-5 rounded-xl" style="background:linear-gradient(135deg,rgba(249,115,22,.15),rgba(251,191,36,.1));border:1px solid rgba(249,115,22,.3)">
+          <div class="flex items-center justify-center gap-3">
+            <iconify-icon icon="solar:heart-bold" style="color:#F97316;font-size:1.5rem"></iconify-icon>
+            <div><p class="text-white font-bold text-lg">Offre Spéciale Couples</p><p class="text-white/60 text-sm">Réduction exclusive pour les couples — Contactez-nous !</p></div>
+            <iconify-icon icon="solar:heart-bold" style="color:#F97316;font-size:1.5rem"></iconify-icon>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== SLIDE 10: CONSEILS ===================== -->
+<div class="slide" id="slide-9">
+  <div class="slide-bg" style="background-image:url('https://images.unsplash.com/photo-1483347756197-71ef80e95f73?w=1920&q=85&auto=format&fit=crop');background-color:#0c4a6e"></div>
+  <div class="overlay-gradient"></div>
+  <div class="slide-content" style="padding-top:5rem">
+    <div class="max-w-6xl mx-auto w-full">
+      <div class="anim-up delay-1 mb-3">
+        <span class="badge" style="background:rgba(251,191,36,.15);color:#FBBF24;border:1px solid rgba(251,191,36,.3)">
+          <iconify-icon icon="solar:lightbulb-bolt-bold" style="font-size:.75rem"></iconify-icon> Conseils
+        </span>
+      </div>
+      <h2 class="anim-up delay-1 font-playfair text-4xl md:text-5xl font-bold text-white mb-2">Conseils aux <span class="golden-text">Voyageurs</span></h2>
+      <p class="anim-up delay-2 text-white/50 text-lg mb-10">Préparez votre voyage en toute sérénité</p>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="anim-up delay-2 glass-card p-7 relative overflow-hidden">
+          <div class="absolute -bottom-8 -right-8 w-28 h-28 rounded-full" style="background:radial-gradient(circle,rgba(37,99,235,.1),transparent)"></div>
+          <div class="w-16 h-16 rounded-2xl flex items-center justify-center mb-5" style="background:linear-gradient(135deg,rgba(37,99,235,.2),rgba(96,165,250,.1));color:#60A5FA;font-size:2rem"><iconify-icon icon="solar:document-bold-duotone"></iconify-icon></div>
+          <h3 class="text-white text-xl font-semibold mb-4">Documents nécessaires</h3>
+          <ul class="space-y-3">
+            <li class="flex items-center gap-2 text-white/60 text-sm"><iconify-icon icon="solar:check-read-bold" style="color:#34D399"></iconify-icon>Passeport valide (+6 mois)</li>
+            <li class="flex items-center gap-2 text-white/60 text-sm"><iconify-icon icon="solar:check-read-bold" style="color:#34D399"></iconify-icon>Visa Schengen</li>
+            <li class="flex items-center gap-2 text-white/60 text-sm"><iconify-icon icon="solar:check-read-bold" style="color:#34D399"></iconify-icon>Réservation hôtel</li>
+            <li class="flex items-center gap-2 text-white/60 text-sm"><iconify-icon icon="solar:check-read-bold" style="color:#34D399"></iconify-icon>Attestation d'assurance</li>
+          </ul>
+        </div>
+        <div class="anim-up delay-3 glass-card p-7 relative overflow-hidden">
+          <div class="absolute -bottom-8 -right-8 w-28 h-28 rounded-full" style="background:radial-gradient(circle,rgba(249,115,22,.1),transparent)"></div>
+          <div class="w-16 h-16 rounded-2xl flex items-center justify-center mb-5" style="background:linear-gradient(135deg,rgba(249,115,22,.2),rgba(251,191,36,.1));color:#FB923C;font-size:2rem"><iconify-icon icon="solar:t-shirt-bold-duotone"></iconify-icon></div>
+          <h3 class="text-white text-xl font-semibold mb-4">Vêtements à prévoir</h3>
+          <ul class="space-y-3">
+            <li class="flex items-center gap-2 text-white/60 text-sm"><iconify-icon icon="solar:check-read-bold" style="color:#34D399"></iconify-icon>Veste imperméable</li>
+            <li class="flex items-center gap-2 text-white/60 text-sm"><iconify-icon icon="solar:check-read-bold" style="color:#34D399"></iconify-icon>Chaussures confortables</li>
+            <li class="flex items-center gap-2 text-white/60 text-sm"><iconify-icon icon="solar:check-read-bold" style="color:#34D399"></iconify-icon>Vêtements multicouches</li>
+            <li class="flex items-center gap-2 text-white/60 text-sm"><iconify-icon icon="solar:check-read-bold" style="color:#34D399"></iconify-icon>Parapluie de voyage</li>
+          </ul>
+        </div>
+        <div class="anim-up delay-4 glass-card p-7 relative overflow-hidden">
+          <div class="absolute -bottom-8 -right-8 w-28 h-28 rounded-full" style="background:radial-gradient(circle,rgba(52,211,153,.1),transparent)"></div>
+          <div class="w-16 h-16 rounded-2xl flex items-center justify-center mb-5" style="background:linear-gradient(135deg,rgba(52,211,153,.2),rgba(5,150,105,.1));color:#34D399;font-size:2rem"><iconify-icon icon="solar:shield-bold-duotone"></iconify-icon></div>
+          <h3 class="text-white text-xl font-semibold mb-4">Conseils de sécurité</h3>
+          <ul class="space-y-3">
+            <li class="flex items-center gap-2 text-white/60 text-sm"><iconify-icon icon="solar:check-read-bold" style="color:#34D399"></iconify-icon>Garder vos documents sur vous</li>
+            <li class="flex items-center gap-2 text-white/60 text-sm"><iconify-icon icon="solar:check-read-bold" style="color:#34D399"></iconify-icon>Attention aux pickpockets</li>
+            <li class="flex items-center gap-2 text-white/60 text-sm"><iconify-icon icon="solar:check-read-bold" style="color:#34D399"></iconify-icon>Suivre les consignes du guide</li>
+            <li class="flex items-center gap-2 text-white/60 text-sm"><iconify-icon icon="solar:check-read-bold" style="color:#34D399"></iconify-icon>Numéro d'urgence enregistré</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== SLIDE 11: POURQUOI WAHCHYY ===================== -->
+<div class="slide" id="slide-10">
+  <div class="slide-bg" style="background-image:url('https://images.unsplash.com/photo-1490750967868-88aa4f44baee?w=1920&q=85&auto=format&fit=crop');background-color:#064e3b"></div>
+  <div class="overlay-gradient"></div>
+  <div class="slide-content items-center text-center" style="padding-top:5rem">
+    <div class="max-w-5xl mx-auto w-full">
+      <div class="anim-up delay-1 mb-4">
+        <span class="badge" style="background:rgba(249,115,22,.15);color:#FB923C;border:1px solid rgba(249,115,22,.3)">
+          <iconify-icon icon="solar:verified-check-bold" style="font-size:.75rem"></iconify-icon> Notre Engagement
+        </span>
+      </div>
+      <h2 class="anim-up delay-1 font-playfair text-4xl md:text-6xl font-bold text-white mb-3">Pourquoi choisir</h2>
+      <h2 class="anim-up delay-2 font-playfair text-4xl md:text-6xl font-bold mb-12"><span class="golden-text">Wahchyy Voyage</span> ?</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div class="anim-up delay-2 glass-card p-6 text-center">
+          <div class="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4" style="background:linear-gradient(135deg,#F97316,#EA580C);box-shadow:0 8px 20px rgba(249,115,22,.3)"><iconify-icon icon="solar:clipboard-check-bold" style="color:#fff;font-size:1.8rem"></iconify-icon></div>
+          <h3 class="text-white font-semibold text-lg mb-2">Organisation Pro</h3>
+          <p class="text-white/40 text-sm">Chaque détail est soigneusement planifié pour vous</p>
+        </div>
+        <div class="anim-up delay-3 glass-card p-6 text-center">
+          <div class="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4" style="background:linear-gradient(135deg,#2563EB,#1E3A8A);box-shadow:0 8px 20px rgba(37,99,235,.3)"><iconify-icon icon="solar:wallet-money-bold" style="color:#fff;font-size:1.8rem"></iconify-icon></div>
+          <h3 class="text-white font-semibold text-lg mb-2">Prix accessibles</h3>
+          <p class="text-white/40 text-sm">Des tarifs compétitifs sans compromettre la qualité</p>
+        </div>
+        <div class="anim-up delay-4 glass-card p-6 text-center">
+          <div class="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4" style="background:linear-gradient(135deg,#059669,#047857);box-shadow:0 8px 20px rgba(5,150,105,.3)"><iconify-icon icon="solar:heart-bold" style="color:#fff;font-size:1.8rem"></iconify-icon></div>
+          <h3 class="text-white font-semibold text-lg mb-2">Expérience unique</h3>
+          <p class="text-white/40 text-sm">Des souvenirs inoubliables garantis</p>
+        </div>
+        <div class="anim-up delay-5 glass-card p-6 text-center">
+          <div class="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4" style="background:linear-gradient(135deg,#FBBF24,#D97706);box-shadow:0 8px 20px rgba(251,191,36,.3)"><iconify-icon icon="solar:crown-bold" style="color:#fff;font-size:1.8rem"></iconify-icon></div>
+          <h3 class="text-white font-semibold text-lg mb-2">Confort premium</h3>
+          <p class="text-white/40 text-sm">Qualité et service d'exception à chaque étape</p>
+        </div>
+      </div>
+      <div class="anim-up delay-6 mt-10 flex flex-wrap items-center justify-center gap-8">
+        <div class="text-center"><p class="text-3xl font-bold golden-text">500+</p><p class="text-white/40 text-xs uppercase tracking-widest mt-1">Voyageurs satisfaits</p></div>
+        <div class="w-px h-10" style="background:rgba(255,255,255,.1)"></div>
+        <div class="text-center"><p class="text-3xl font-bold golden-text">50+</p><p class="text-white/40 text-xs uppercase tracking-widest mt-1">Destinations</p></div>
+        <div class="w-px h-10" style="background:rgba(255,255,255,.1)"></div>
+        <div class="text-center"><p class="text-3xl font-bold golden-text">98%</p><p class="text-white/40 text-xs uppercase tracking-widest mt-1">Satisfaction</p></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== SLIDE 12: MERCI ===================== -->
+<div class="slide" id="slide-11">
+  <div class="slide-bg" style="background-image:url('https://images.unsplash.com/photo-1483347756197-71ef80e95f73?w=1920&q=85&auto=format&fit=crop');background-color:#0c4a6e"></div>
+  <div class="overlay-gradient"></div>
+  <div class="slide-content items-center text-center" style="padding-top:5rem">
+    <div class="max-w-3xl mx-auto">
+      <div class="anim-scale delay-1 mb-8">
+        <div class="inline-flex items-center gap-3 px-6 py-3 rounded-full" style="background:rgba(249,115,22,.15);border:1px solid rgba(249,115,22,.3)">
+          <div class="w-12 h-12 rounded-xl flex items-center justify-center" style="background:linear-gradient(135deg,#F97316,#EA580C)">
+            <iconify-icon icon="solar:airplane-bold" style="color:#fff;font-size:1.5rem"></iconify-icon>
+          </div>
+          <span class="logo-text text-2xl font-bold">Wahchyy Voyage</span>
+        </div>
+      </div>
+      <h2 class="anim-up delay-2 font-playfair text-5xl md:text-7xl font-bold text-white mb-4" style="text-shadow:0 4px 30px rgba(0,0,0,.4)">
+        Merci pour<br><span class="golden-text">votre attention</span>
+      </h2>
+      <p class="anim-up delay-3 text-white/50 text-xl mb-12">Prêts à vivre une expérience inoubliable ?</p>
+      <div class="anim-up delay-4 grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
+        <div class="glass-card p-5 flex items-center gap-4 justify-center">
+          <iconify-icon icon="solar:phone-bold-duotone" style="color:#34D399;font-size:1.5rem"></iconify-icon>
+          <div class="text-left"><p class="text-white/40 text-xs">Téléphone</p><p class="text-white font-semibold">+216 XX XXX XXX</p></div>
+        </div>
+        <div class="glass-card p-5 flex items-center gap-4 justify-center">
+          <iconify-icon icon="solar:letter-bold-duotone" style="color:#60A5FA;font-size:1.5rem"></iconify-icon>
+          <div class="text-left"><p class="text-white/40 text-xs">Email</p><p class="text-white font-semibold">info@wahchyy.com</p></div>
+        </div>
+        <div class="glass-card p-5 flex items-center gap-4 justify-center">
+          <iconify-icon icon="solar:map-point-bold-duotone" style="color:#FB923C;font-size:1.5rem"></iconify-icon>
+          <div class="text-left"><p class="text-white/40 text-xs">Adresse</p><p class="text-white font-semibold">Djerba, Tunisie</p></div>
+        </div>
+      </div>
+      <div class="anim-up delay-5 flex items-center justify-center gap-4">
+        <a href="#" class="w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-300" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.5)" onmouseover="this.style.background='rgba(249,115,22,.2)';this.style.borderColor='rgba(249,115,22,.4)';this.style.color='#FB923C'" onmouseout="this.style.background='rgba(255,255,255,.08)';this.style.borderColor='rgba(255,255,255,.1)';this.style.color='rgba(255,255,255,.5)'"><iconify-icon icon="simple-icons:facebook" style="font-size:1.2rem"></iconify-icon></a>
+        <a href="#" class="w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-300" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.5)" onmouseover="this.style.background='rgba(249,115,22,.2)';this.style.borderColor='rgba(249,115,22,.4)';this.style.color='#FB923C'" onmouseout="this.style.background='rgba(255,255,255,.08)';this.style.borderColor='rgba(255,255,255,.1)';this.style.color='rgba(255,255,255,.5)'"><iconify-icon icon="simple-icons:instagram" style="font-size:1.2rem"></iconify-icon></a>
+        <a href="#" class="w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-300" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.5)" onmouseover="this.style.background='rgba(52,211,153,.2)';this.style.borderColor='rgba(52,211,153,.4)';this.style.color='#34D399'" onmouseout="this.style.background='rgba(255,255,255,.08)';this.style.borderColor='rgba(255,255,255,.1)';this.style.color='rgba(255,255,255,.5)'"><iconify-icon icon="simple-icons:whatsapp" style="font-size:1.2rem"></iconify-icon></a>
+        <a href="#" class="w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-300" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.5)" onmouseover="this.style.background='rgba(37,99,235,.2)';this.style.borderColor='rgba(37,99,235,.4)';this.style.color='#60A5FA'" onmouseout="this.style.background='rgba(255,255,255,.08)';this.style.borderColor='rgba(255,255,255,.1)';this.style.color='rgba(255,255,255,.5)'"><iconify-icon icon="simple-icons:tiktok" style="font-size:1.2rem"></iconify-icon></a>
+      </div>
+      <p class="anim-up delay-6 text-white/20 text-xs mt-8">© 2025 Wahchyy Voyage — Tous droits réservés</p>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== JAVASCRIPT ===================== -->
+<script>
+const totalSlides=12;let currentSlide=0,isTransitioning=false;
+
+const dotsContainer=document.getElementById('navDots');
+for(let i=0;i<totalSlides;i++){const d=document.createElement('button');d.className='nav-dot'+(i===0?' active':'');d.onclick=()=>goToSlide(i);dotsContainer.appendChild(d)}
+
+function updateUI(){
+  document.querySelectorAll('.slide').forEach((s,i)=>s.classList.toggle('active',i===currentSlide));
+  document.querySelectorAll('.nav-dot').forEach((d,i)=>d.classList.toggle('active',i===currentSlide));
+  document.getElementById('slideCounter').textContent=`${currentSlide+1} / ${totalSlides}`;
+  document.getElementById('progressBar').style.width=`${((currentSlide+1)/totalSlides)*100}%`;
+}
+
+function goToSlide(i){if(isTransitioning||i===currentSlide)return;isTransitioning=true;currentSlide=i;updateUI();setTimeout(()=>isTransitioning=false,800)}
+function nextSlide(){if(currentSlide<totalSlides-1)goToSlide(currentSlide+1)}
+function prevSlide(){if(currentSlide>0)goToSlide(currentSlide-1)}
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowRight'||e.key===' '){e.preventDefault();nextSlide()}
+  if(e.key==='ArrowLeft'){e.preventDefault();prevSlide()}
+  if(e.key==='Home'){e.preventDefault();goToSlide(0)}
+  if(e.key==='End'){e.preventDefault();goToSlide(totalSlides-1)}
+});
+
+let touchStartX=0;
+document.addEventListener('touchstart',e=>{touchStartX=e.changedTouches[0].screenX},false);
+document.addEventListener('touchend',e=>{
+  const diff=touchStartX-e.changedTouches[0].screenX;
+  if(Math.abs(diff)>50){diff>0?nextSlide():prevSlide()}
+},false);
+
+let wheelTimeout;
+document.addEventListener('wheel',e=>{
+  e.preventDefault();clearTimeout(wheelTimeout);
+  wheelTimeout=setTimeout(()=>{(e.deltaY>0||e.deltaX>0)?nextSlide():prevSlide()},80)
+},{passive:false});
+
+updateUI();
+</script>
+
+</body>
+</html>
